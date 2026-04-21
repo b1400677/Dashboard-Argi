@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DDA Agro Group · Agricultural Export Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,600&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #F7F3EC;
+  --bg-card: #FFFFFF;
+  --ink: #1A1F2E;
+  --ink-soft: #3F4758;
+  --ink-mute: #7A8194;
+  --line: #E5DFD2;
+  --accent: #4A6B2E;           /* Agri deep green */
+  --accent-soft: #CCDBBD;
+  --earth: #8B6A4A;
+  --sage: #5E8566;
+  --alert: #B84545;
+  --warn: #D1A845;
+  --coral: #E06C35;
+  --teal: #3A7A85;
+  --plum: #6E4A6A;
+  --navy: #1F3A5C;
+  --gold: #C89849;
+  --mint: #7BA688;
+  --wheat: #D4A574;
+  --shadow: 0 1px 2px rgba(26,31,46,0.04), 0 4px 16px rgba(26,31,46,0.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--ink); font-family: 'Manrope', sans-serif; -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; padding: 24px; }
+.shell { max-width: 1440px; margin: 0 auto; }
+
+.masthead { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 20px; margin-bottom: 24px; border-bottom: 1.5px solid var(--ink); gap: 24px; flex-wrap: wrap; }
+.brand { display: flex; flex-direction: column; gap: 4px; }
+.eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.masthead h1 { font-family: 'Fraunces', serif; font-weight: 900; font-size: clamp(32px, 4vw, 52px); line-height: 1; letter-spacing: -0.02em; font-style: italic; }
+.masthead h1 em { font-style: normal; color: var(--accent); }
+.subtitle { font-size: 13px; color: var(--ink-soft); margin-top: 6px; max-width: 680px; }
+.company-badge { display: inline-block; margin-top: 8px; padding: 3px 10px; background: var(--ink); color: var(--bg); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; }
+.framework-badge { display: inline-flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.framework-badge span { padding: 2px 8px; background: var(--accent-soft); color: var(--accent); font-size: 10px; font-family: 'JetBrains Mono', monospace; font-weight: 600; letter-spacing: 0.03em; }
+.controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.data-status { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute); }
+.data-status .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--sage); margin-right: 6px; }
+.btn { font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 13px; padding: 10px 16px; border: 1.5px solid var(--ink); background: var(--ink); color: var(--bg); cursor: pointer; letter-spacing: 0.01em; display: inline-flex; align-items: center; gap: 8px; }
+.btn:hover { background: var(--accent); border-color: var(--accent); }
+.btn svg { width: 14px; height: 14px; }
+
+.filters { background: var(--bg-card); padding: 14px 18px; margin-bottom: 20px; display: flex; gap: 18px; align-items: center; flex-wrap: wrap; border: 1px solid var(--line); box-shadow: var(--shadow); }
+.filter-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-group label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-mute); }
+.filter-group select { font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 500; padding: 6px 28px 6px 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; min-width: 140px; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M2 4l3 3 3-3' stroke='%231A1F2E' stroke-width='1.5' fill='none'/></svg>"); background-repeat: no-repeat; background-position: right 10px center; }
+.reset-filters { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent); text-decoration: underline; cursor: pointer; background: none; border: none; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; padding: 4px; }
+
+/* Hero */
+.hero { background: var(--bg-card); border: 1px solid var(--line); box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px; display: grid; grid-template-columns: 340px 1fr; gap: 24px; }
+.export-hero { text-align: center; padding: 20px; background: linear-gradient(135deg, #F0F5EB 0%, #E5EDDB 100%); border-left: 4px solid var(--accent); }
+.export-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-mute); margin-bottom: 8px; }
+.export-value { font-family: 'Fraunces', serif; font-weight: 900; font-size: 56px; line-height: 1; font-style: italic; color: var(--accent); }
+.export-value .unit { font-size: 22px; color: var(--ink-mute); font-weight: 600; }
+.export-yoy { display: inline-block; margin-top: 10px; padding: 4px 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; background: #DEE8E0; color: var(--sage); }
+.export-sub { display: flex; justify-content: center; gap: 18px; margin-top: 12px; font-size: 11px; color: var(--ink-soft); font-family: 'JetBrains Mono', monospace; }
+.export-sub span { display: flex; flex-direction: column; align-items: center; }
+.export-sub strong { font-family: 'Fraunces', serif; font-style: italic; font-size: 18px; font-weight: 700; color: var(--accent); }
+
+.hero-kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.hero-kpi { padding: 14px; border: 1px solid var(--line); position: relative; }
+.hero-kpi::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--accent); }
+.hero-kpi.sage::before { background: var(--sage); }
+.hero-kpi.gold::before { background: var(--gold); }
+.hero-kpi.teal::before { background: var(--teal); }
+.hero-kpi.earth::before { background: var(--earth); }
+.hero-kpi.plum::before { background: var(--plum); }
+.hero-kpi-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute); margin-bottom: 6px; }
+.hero-kpi-value { font-family: 'Fraunces', serif; font-weight: 700; font-size: 24px; line-height: 1; font-style: italic; color: var(--ink); }
+.hero-kpi-value .unit { font-size: 13px; color: var(--ink-mute); font-weight: 500; font-family: 'Manrope', sans-serif; font-style: normal; }
+.hero-kpi-sub { font-size: 10px; color: var(--ink-soft); margin-top: 4px; }
+.badge { display: inline-block; padding: 1px 5px; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; margin-left: 4px; }
+.badge.good { background: #DEE8E0; color: var(--sage); }
+.badge.warn { background: #F6EBCD; color: #8B6A15; }
+.badge.alert { background: #F4DCDC; color: var(--alert); }
+
+.chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; }
+.chart-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.chart-card { background: var(--bg-card); padding: 20px; border: 1px solid var(--line); box-shadow: var(--shadow); display: flex; flex-direction: column; }
+.chart-card.tall { min-height: 420px; }
+.chart-card.matrix { min-height: 520px; }
+.chart-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.chart-head h3 { font-family: 'Fraunces', serif; font-weight: 700; font-size: 20px; font-style: italic; letter-spacing: -0.01em; }
+.chart-head .note { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-mute); letter-spacing: 0.08em; text-transform: uppercase; }
+.chart-body { flex: 1; position: relative; min-height: 300px; }
+
+/* =============== SIGNATURE: Harvest Calendar Heatmap =============== */
+.harvest-calendar { background: var(--bg-card); padding: 20px; border: 1px solid var(--line); box-shadow: var(--shadow); margin-bottom: 20px; }
+.calendar-grid { display: grid; grid-template-columns: 200px repeat(12, 1fr); gap: 2px; margin-top: 12px; }
+.cal-header { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; color: var(--ink-soft); text-transform: uppercase; padding: 6px 4px; text-align: center; background: #F0EDE5; }
+.cal-row-label { font-family: 'Fraunces', serif; font-style: italic; font-weight: 700; font-size: 13px; padding: 8px 6px; color: var(--ink); display: flex; align-items: center; }
+.cal-cell { padding: 10px 4px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; color: #FFF; display: flex; align-items: center; justify-content: center; min-height: 36px; }
+.cal-cell-empty { background: #F7F3EC; color: var(--ink-mute); }
+
+/* =============== Certification Breakdown Chart =============== */
+.cert-breakdown { display: flex; flex-direction: column; gap: 8px; }
+.cert-row { display: grid; grid-template-columns: 180px 1fr 60px; gap: 10px; align-items: center; padding: 6px 0; }
+.cert-name { font-family: 'Fraunces', serif; font-style: italic; font-weight: 700; font-size: 13px; }
+.cert-stack { height: 22px; display: flex; background: #F0EDE5; position: relative; overflow: hidden; }
+.cert-seg { height: 100%; }
+.cert-seg.organic { background: #2F6B2F; }
+.cert-seg.globalgap { background: #5E8566; }
+.cert-seg.vietgap { background: #C8A063; }
+.cert-seg.conventional { background: #B59C7D; opacity: 0.5; }
+.cert-total-text { font-family: 'JetBrains Mono', monospace; font-size: 12px; text-align: right; font-weight: 700; color: var(--accent); }
+.cert-legend { display: flex; justify-content: center; gap: 16px; margin-top: 12px; font-size: 11px; color: var(--ink-soft); font-family: 'JetBrains Mono', monospace; }
+.cert-legend-item { display: flex; align-items: center; gap: 6px; }
+.cert-legend-swatch { width: 12px; height: 12px; }
+
+/* Scorecard tables */
+.loc-card { background: var(--bg-card); padding: 20px; border: 1px solid var(--line); box-shadow: var(--shadow); margin-bottom: 20px; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.data-table thead { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-mute); border-bottom: 1.5px solid var(--ink); }
+.data-table th { padding: 10px 8px; text-align: left; font-weight: 600; }
+.data-table td { padding: 11px 8px; border-bottom: 1px solid var(--line); color: var(--ink-soft); }
+.data-table tr:hover td { background: #FDFAF5; color: var(--ink); }
+.data-table .item-name { font-weight: 600; color: var(--ink); font-family: 'Fraunces', serif; font-style: italic; font-size: 13px; }
+.data-table .num { text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+.pill { display: inline-block; padding: 1px 6px; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 600; letter-spacing: 0.04em; background: #F0EDE5; color: var(--ink-soft); }
+.pill.high { background: var(--accent); color: #FFF; }
+.pill.medium { background: var(--wheat); color: #FFF; }
+.pill.low { background: #E8DCD0; color: var(--earth); }
+.pill.veryhigh { background: var(--ink); color: #FFF; }
+
+.footer { text-align: center; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--line); font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-mute); letter-spacing: 0.1em; text-transform: uppercase; }
+.footer em { color: var(--accent); font-style: italic; font-family: 'Fraunces', serif; text-transform: none; letter-spacing: 0; font-size: 12px; }
+
+@media (max-width: 1100px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 800px) {
+  .chart-grid, .chart-row-2 { grid-template-columns: 1fr; }
+  .calendar-grid { grid-template-columns: 140px repeat(12, 1fr); font-size: 8px; }
+  .cert-row { grid-template-columns: 1fr; gap: 4px; }
+}
+@media (max-width: 600px) {
+  body { padding: 16px; }
+  .hero-kpi-grid { grid-template-columns: 1fr; }
+  .masthead { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="masthead">
+    <div class="brand">
+      <span class="eyebrow">Multi-Commodity Agri-Export · 2023-04 → 2025-03 · 7 commodities · 8 markets</span>
+      <h1>Agricultural <em>Export Portfolio</em></h1>
+      <p class="subtitle">Export Value · Yield per ha · Certification % · EUDR readiness · Farmer income · Post-harvest loss · 20 vùng nguyên liệu · 37,440 hộ nông dân.</p>
+      <span class="company-badge">TẬP ĐOÀN NÔNG SẢN ĐÔNG DƯƠNG · DDA AGRO GROUP · MULTI-COMMODITY EXPORTER</span>
+      <div class="framework-badge">
+        <span>GHG Protocol</span>
+        <span>EUDR 2026</span>
+        <span>VietGAP</span>
+        <span>GlobalGAP</span>
+        <span>Organic</span>
+        <span>Rainforest Alliance</span>
+        <span>4C</span>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="data-status">
+        <span><span class="status-dot"></span>DỮ LIỆU NHÚNG</span>
+        <span>480 production · 1,344 export records</span>
+      </div>
+      <button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>Refresh</button>
+    </div>
+  </header>
+
+  <section class="filters">
+    <div class="filter-group"><label>Commodity</label><select id="f-commodity"><option value="">Tất cả</option></select></div>
+    <div class="filter-group"><label>Market</label><select id="f-market"><option value="">Tất cả</option></select></div>
+    <div class="filter-group"><label>Cert Level</label><select id="f-cert"><option value="">Tất cả</option><option value="veryhigh">Very High</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div>
+    <button class="reset-filters" id="resetBtn">↻ Reset</button>
+    <div style="flex: 1;"></div>
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-soft);">Period: <span style="color: var(--accent); font-weight: 700;">Apr 2023 → Mar 2025</span></div>
+  </section>
+
+  <!-- Hero: Export Value USD + 6 KPIs -->
+  <section class="hero">
+    <div class="export-hero">
+      <div class="export-label">Annualized Export Value</div>
+      <div class="export-value" id="export-value">—<span class="unit"> USD</span></div>
+      <div class="export-yoy" id="export-yoy">—</div>
+      <div class="export-sub">
+        <span>Volume<strong id="export-vol">—</strong></span>
+        <span>Avg Price<strong id="export-price">—</strong></span>
+      </div>
+    </div>
+
+    <div class="hero-kpi-grid">
+      <div class="hero-kpi earth">
+        <div class="hero-kpi-label">Cultivation Area</div>
+        <div class="hero-kpi-value" id="kpi-hectares">—<span class="unit"> ha</span></div>
+        <div class="hero-kpi-sub" id="kpi-hectares-sub">—</div>
+      </div>
+      <div class="hero-kpi sage">
+        <div class="hero-kpi-label">Farmer Households</div>
+        <div class="hero-kpi-value" id="kpi-farmers">—</div>
+        <div class="hero-kpi-sub" id="kpi-farmers-sub">—</div>
+      </div>
+      <div class="hero-kpi gold">
+        <div class="hero-kpi-label">Certified Production</div>
+        <div class="hero-kpi-value" id="kpi-cert">—<span class="unit"> %</span></div>
+        <div class="hero-kpi-sub" id="kpi-cert-sub">—</div>
+      </div>
+      <div class="hero-kpi teal">
+        <div class="hero-kpi-label">EUDR Ready (critical 2026)</div>
+        <div class="hero-kpi-value" id="kpi-eudr">—<span class="unit"> %</span></div>
+        <div class="hero-kpi-sub" id="kpi-eudr-sub">—</div>
+      </div>
+      <div class="hero-kpi plum">
+        <div class="hero-kpi-label">Avg Farmer Income · Quý</div>
+        <div class="hero-kpi-value" id="kpi-farmer-income">—<span class="unit"> tr VND</span></div>
+        <div class="hero-kpi-sub" id="kpi-farmer-income-sub">—</div>
+      </div>
+      <div class="hero-kpi sage">
+        <div class="hero-kpi-label">Post-Harvest Loss</div>
+        <div class="hero-kpi-value" id="kpi-loss">—<span class="unit"> %</span></div>
+        <div class="hero-kpi-sub" id="kpi-loss-sub">—</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Row 1: Export Trend + Market Mix -->
+  <section class="chart-grid">
+    <div class="chart-card tall">
+      <div class="chart-head"><h3>Export Value Trend · 24 months</h3><span class="note">Volume (bar) + Avg price (line)</span></div>
+      <div class="chart-body"><canvas id="exportTrendChart"></canvas></div>
+    </div>
+    <div class="chart-card tall">
+      <div class="chart-head"><h3>Export Destinations</h3><span class="note">EU · US · China · Japan · ASEAN...</span></div>
+      <div class="chart-body"><canvas id="marketChart"></canvas></div>
+    </div>
+  </section>
+
+  <!-- SIGNATURE: Commodity Portfolio Matrix (Bubble) + Cert Breakdown -->
+  <section class="chart-row-2">
+    <div class="chart-card matrix">
+      <div class="chart-head"><h3>🎯 Commodity Portfolio Matrix</h3><span class="note">Signature · Yield % × Growth % × Export Value (bubble size)</span></div>
+      <div class="chart-body"><canvas id="matrixChart"></canvas></div>
+    </div>
+    <div class="chart-card matrix">
+      <div class="chart-head"><h3>Certification Breakdown per Commodity</h3><span class="note">Organic · GlobalGAP · VietGAP · Conventional</span></div>
+      <div class="chart-body" style="overflow: auto; padding: 10px 0;"><div class="cert-breakdown" id="certBreakdown"></div></div>
+      <div class="cert-legend">
+        <span class="cert-legend-item"><span class="cert-legend-swatch" style="background: #2F6B2F;"></span>Organic</span>
+        <span class="cert-legend-item"><span class="cert-legend-swatch" style="background: #5E8566;"></span>GlobalGAP</span>
+        <span class="cert-legend-item"><span class="cert-legend-swatch" style="background: #C8A063;"></span>VietGAP</span>
+        <span class="cert-legend-item"><span class="cert-legend-swatch" style="background: #B59C7D; opacity: 0.5;"></span>Conventional</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SIGNATURE: Harvest Calendar Heatmap -->
+  <section class="harvest-calendar">
+    <div class="chart-head"><h3>🌾 Harvest & Export Seasonality Calendar</h3><span class="note">Monthly export volume by commodity · Darker = Higher volume</span></div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+  </section>
+
+  <!-- Row 2: Yield vs Target + Farmer Income Trend -->
+  <section class="chart-row-2">
+    <div class="chart-card tall">
+      <div class="chart-head"><h3>Yield vs Target per Commodity</h3><span class="note">Current · Target · World average</span></div>
+      <div class="chart-body"><canvas id="yieldChart"></canvas></div>
+    </div>
+    <div class="chart-card tall">
+      <div class="chart-head"><h3>Farmer Income Trend</h3><span class="note">Quarterly net USD/ha by commodity</span></div>
+      <div class="chart-body"><canvas id="incomeChart"></canvas></div>
+    </div>
+  </section>
+
+  <!-- Commodity Scorecard -->
+  <section class="loc-card">
+    <div class="chart-head"><h3>Commodity Portfolio Scorecard</h3><span class="note">7 commodities · Export value · Yield · Certification · EUDR</span></div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Commodity</th>
+          <th>Category</th>
+          <th style="text-align: right;">Hectares</th>
+          <th style="text-align: right;">Farmers</th>
+          <th style="text-align: right;">Export (USD/yr)</th>
+          <th style="text-align: right;">Price/ton</th>
+          <th style="text-align: right;">Yield</th>
+          <th style="text-align: right;">vs Target</th>
+          <th style="text-align: right;">YoY</th>
+          <th style="text-align: right;">Cert %</th>
+          <th style="text-align: right;">EUDR %</th>
+        </tr>
+      </thead>
+      <tbody id="commodityBody"></tbody>
+    </table>
+  </section>
+
+  <!-- Regions Scorecard -->
+  <section class="loc-card">
+    <div class="chart-head"><h3>Top Regions Performance</h3><span class="note">20 sourcing regions · Cert level · Income · Loss</span></div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Region</th>
+          <th>Commodity</th>
+          <th style="text-align: right;">Hectares</th>
+          <th style="text-align: right;">Farmers</th>
+          <th style="text-align: center;">Cert Level</th>
+          <th style="text-align: right;">Yield/ha</th>
+          <th style="text-align: right;">Cert %</th>
+          <th style="text-align: right;">EUDR %</th>
+          <th style="text-align: right;">Loss %</th>
+          <th style="text-align: right;">Income (M VND/Q)</th>
+        </tr>
+      </thead>
+      <tbody id="regionBody"></tbody>
+    </table>
+  </section>
+
+  <footer class="footer">
+    <p>Data: <em>DDA Agro Group</em> Production + Export + Farmer Management · EUDR 2026 compliance in progress · Data aligned with USDA FAS + VICOFA benchmarks</p>
+  </footer>
+</div>
+
+<script>
+const DATA = {"agri_kpis":{"total_commodities":7,"total_regions":20,"total_hectares":126640,"total_farmers":37440,"total_markets":8,"production_tons_24m":1603459,"export_volume_tons_24m":1243897,"export_value_usd_24m":2840652996,"export_value_annualized_usd":1420326498,"avg_price_usd_per_ton":2283,"yoy_export_growth_pct":45.3,"certified_pct":69.5,"eudr_ready_pct":57.7,"post_harvest_loss_pct":10.5,"eu_share_pct":30.1,"avg_farmer_income_q_vnd":28117845,"avg_farmgate_pct":65.7},"dim_commodities":[{"commodity_id":"C01","name_en":"Robusta Coffee","name_vi":"Cà phê Robusta","category":"Industrial","vn_yield":3.0,"world_yield":1.0,"target_yield":3.5,"price_usd":4800,"cycle_months":12,"harvest_months":"[10, 11, 12, 1, 2]"},{"commodity_id":"C02","name_en":"Rice (Jasmine)","name_vi":"Lúa gạo Jasmine","category":"Staple","vn_yield":6.2,"world_yield":4.7,"target_yield":7.0,"price_usd":625,"cycle_months":4,"harvest_months":"[3, 4, 7, 8, 11, 12]"},{"commodity_id":"C03","name_en":"Black Pepper","name_vi":"Hồ tiêu","category":"Spice","vn_yield":2.8,"world_yield":1.2,"target_yield":3.5,"price_usd":6200,"cycle_months":12,"harvest_months":"[2, 3, 4, 5]"},{"commodity_id":"C04","name_en":"Cashew","name_vi":"Điều","category":"Nut","vn_yield":1.2,"world_yield":0.8,"target_yield":1.8,"price_usd":7500,"cycle_months":12,"harvest_months":"[2, 3, 4, 5]"},{"commodity_id":"C05","name_en":"Dragon Fruit","name_vi":"Thanh long","category":"Fruit","vn_yield":28.0,"world_yield":18.0,"target_yield":35.0,"price_usd":1800,"cycle_months":6,"harvest_months":"[5, 6, 7, 8, 9, 10]"},{"commodity_id":"C06","name_en":"Pangasius (Basa)","name_vi":"Cá tra","category":"Aquaculture","vn_yield":30.0,"world_yield":25.0,"target_yield":40.0,"price_usd":2850,"cycle_months":6,"harvest_months":"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"},{"commodity_id":"C07","name_en":"Natural Rubber","name_vi":"Cao su tự nhiên","category":"Industrial","vn_yield":1.7,"world_yield":1.1,"target_yield":2.0,"price_usd":1950,"cycle_months":12,"harvest_months":"[4, 5, 6, 7, 8, 9, 10, 11]"}],"dim_regions":[{"region_id":"R01","region_name":"Đắk Lắk (Coffee)","commodity_id":"C01","hectares":17000,"farmers":2480,"cert_level":"high","emission_intensity":"medium"},{"region_id":"R02","region_name":"Lâm Đồng (Coffee)","commodity_id":"C01","hectares":8400,"farmers":1640,"cert_level":"veryhigh","emission_intensity":"medium"},{"region_id":"R03","region_name":"Đắk Nông (Coffee)","commodity_id":"C01","hectares":7000,"farmers":1360,"cert_level":"medium","emission_intensity":"medium"},{"region_id":"R04","region_name":"Gia Lai (Coffee)","commodity_id":"C01","hectares":5600,"farmers":1080,"cert_level":"medium","emission_intensity":"medium"},{"region_id":"R05","region_name":"Kon Tum (Coffee)","commodity_id":"C01","hectares":3000,"farmers":440,"cert_level":"low","emission_intensity":"medium"},{"region_id":"R06","region_name":"An Giang (Rice)","commodity_id":"C02","hectares":13000,"farmers":5600,"cert_level":"high","emission_intensity":"low"},{"region_id":"R07","region_name":"Kiên Giang (Rice)","commodity_id":"C02","hectares":14400,"farmers":6200,"cert_level":"high","emission_intensity":"low"},{"region_id":"R08","region_name":"Đồng Tháp (Rice)","commodity_id":"C02","hectares":11000,"farmers":4500,"cert_level":"high","emission_intensity":"low"},{"region_id":"R09","region_name":"Long An (Rice)","commodity_id":"C02","hectares":9000,"farmers":3640,"cert_level":"medium","emission_intensity":"low"},{"region_id":"R10","region_name":"Bình Phước (Pepper)","commodity_id":"C03","hectares":3700,"farmers":900,"cert_level":"medium","emission_intensity":"low"},{"region_id":"R11","region_name":"Đắk Lắk (Pepper)","commodity_id":"C03","hectares":2400,"farmers":620,"cert_level":"high","emission_intensity":"low"},{"region_id":"R12","region_name":"Bình Phước (Cashew)","commodity_id":"C04","hectares":5600,"farmers":1640,"cert_level":"medium","emission_intensity":"low"},{"region_id":"R13","region_name":"Đồng Nai (Cashew)","commodity_id":"C04","hectares":3100,"farmers":960,"cert_level":"medium","emission_intensity":"low"},{"region_id":"R14","region_name":"Bình Thuận (Dragon)","commodity_id":"C05","hectares":4400,"farmers":1680,"cert_level":"high","emission_intensity":"medium"},{"region_id":"R15","region_name":"Long An (Dragon)","commodity_id":"C05","hectares":2500,"farmers":960,"cert_level":"high","emission_intensity":"medium"},{"region_id":"R16","region_name":"Đồng Tháp (Pangasius)","commodity_id":"C06","hectares":700,"farmers":560,"cert_level":"high","emission_intensity":"high"},{"region_id":"R17","region_name":"An Giang (Pangasius)","commodity_id":"C06","hectares":840,"farmers":640,"cert_level":"veryhigh","emission_intensity":"high"},{"region_id":"R18","region_name":"Bình Phước (Rubber)","commodity_id":"C07","hectares":7600,"farmers":1300,"cert_level":"medium","emission_intensity":"medium"},{"region_id":"R19","region_name":"Tây Ninh (Rubber)","commodity_id":"C07","hectares":4400,"farmers":760,"cert_level":"medium","emission_intensity":"medium"},{"region_id":"R20","region_name":"Bà Rịa-VT (Rubber)","commodity_id":"C07","hectares":3000,"farmers":480,"cert_level":"low","emission_intensity":"medium"}],"dim_markets":[{"market_id":"EU","market_name":"European Union","standard_level":"strict","price_multiplier":1.15},{"market_id":"US","market_name":"United States","standard_level":"strict","price_multiplier":1.1},{"market_id":"China","market_name":"Trung Quốc","standard_level":"standard","price_multiplier":1.0},{"market_id":"Japan","market_name":"Nhật Bản","standard_level":"strict","price_multiplier":1.12},{"market_id":"Korea","market_name":"Hàn Quốc","standard_level":"standard","price_multiplier":1.05},{"market_id":"ASEAN","market_name":"Đông Nam Á","standard_level":"standard","price_multiplier":0.92},{"market_id":"Middle East","market_name":"Trung Đông","standard_level":"standard","price_multiplier":1.03},{"market_id":"Others","market_name":"Khác","standard_level":"standard","price_multiplier":0.95}],"monthly_exports":[{"month":"2023-04","volume_tons":52860.3,"value_usd":82177674,"avg_price":1555.0},{"month":"2023-05","volume_tons":40137.2,"value_usd":108950695,"avg_price":2714.0},{"month":"2023-06","volume_tons":35874.3,"value_usd":73796635,"avg_price":2057.0},{"month":"2023-07","volume_tons":74056.7,"value_usd":92811049,"avg_price":1253.0},{"month":"2023-08","volume_tons":80962.0,"value_usd":101900561,"avg_price":1259.0},{"month":"2023-09","volume_tons":32618.300000000003,"value_usd":69483846,"avg_price":2130.0},{"month":"2023-10","volume_tons":54441.200000000004,"value_usd":174105099,"avg_price":3198.0},{"month":"2023-11","volume_tons":70213.5,"value_usd":146388037,"avg_price":2085.0},{"month":"2023-12","volume_tons":66839.4,"value_usd":147438719,"avg_price":2206.0},{"month":"2024-01","volume_tons":26269.4,"value_usd":125906477,"avg_price":4793.0},{"month":"2024-02","volume_tons":30869.7,"value_usd":162439244,"avg_price":5262.0},{"month":"2024-03","volume_tons":48027.5,"value_usd":77484184,"avg_price":1613.0},{"month":"2024-04","volume_tons":52203.2,"value_usd":85002872,"avg_price":1628.0},{"month":"2024-05","volume_tons":43077.2,"value_usd":116187071,"avg_price":2697.0},{"month":"2024-06","volume_tons":34249.6,"value_usd":71433564,"avg_price":2086.0},{"month":"2024-07","volume_tons":74638.9,"value_usd":97682788,"avg_price":1309.0},{"month":"2024-08","volume_tons":75881.1,"value_usd":103558469,"avg_price":1365.0},{"month":"2024-09","volume_tons":40287.1,"value_usd":81582707,"avg_price":2025.0},{"month":"2024-10","volume_tons":57408.200000000004,"value_usd":198714936,"avg_price":3461.0},{"month":"2024-11","volume_tons":74365.7,"value_usd":182223023,"avg_price":2450.0},{"month":"2024-12","volume_tons":66316.3,"value_usd":146143174,"avg_price":2204.0},{"month":"2025-01","volume_tons":26362.5,"value_usd":127404932,"avg_price":4833.0},{"month":"2025-02","volume_tons":35340.4,"value_usd":184320493,"avg_price":5216.0},{"month":"2025-03","volume_tons":50597.6,"value_usd":83516747,"avg_price":1651.0}],"monthly_by_commodity":[{"month":"2023-04","commodity_id":"C01","volume_tons":387.4,"value_usd":2041720},{"month":"2023-04","commodity_id":"C02","volume_tons":41162.8,"value_usd":26487843},{"month":"2023-04","commodity_id":"C03","volume_tons":3198.2,"value_usd":21640122},{"month":"2023-04","commodity_id":"C04","volume_tons":1971.2,"value_usd":16382982},{"month":"2023-04","commodity_id":"C05","volume_tons":749.6,"value_usd":1441490},{"month":"2023-04","commodity_id":"C06","volume_tons":2949.7,"value_usd":9268005},{"month":"2023-04","commodity_id":"C07","volume_tons":2441.4,"value_usd":4915512},{"month":"2023-05","commodity_id":"C01","volume_tons":461.4,"value_usd":2398862},{"month":"2023-05","commodity_id":"C02","volume_tons":1025.9,"value_usd":655226},{"month":"2023-05","commodity_id":"C03","volume_tons":3379.5,"value_usd":22232996},{"month":"2023-05","commodity_id":"C04","volume_tons":1938.8,"value_usd":16380079},{"month":"2023-05","commodity_id":"C05","volume_tons":27729.4,"value_usd":52439919},{"month":"2023-05","commodity_id":"C06","volume_tons":3360.3,"value_usd":10263389},{"month":"2023-05","commodity_id":"C07","volume_tons":2241.9,"value_usd":4580224},{"month":"2023-06","commodity_id":"C01","volume_tons":376.3,"value_usd":1964648},{"month":"2023-06","commodity_id":"C02","volume_tons":1064.2,"value_usd":663452},{"month":"2023-06","commodity_id":"C03","volume_tons":60.0,"value_usd":407181},{"month":"2023-06","commodity_id":"C04","volume_tons":36.1,"value_usd":295183},{"month":"2023-06","commodity_id":"C05","volume_tons":29022.9,"value_usd":56212818},{"month":"2023-06","commodity_id":"C06","volume_tons":3149.9,"value_usd":9833560},{"month":"2023-06","commodity_id":"C07","volume_tons":2164.9,"value_usd":4419793},{"month":"2023-07","commodity_id":"C01","volume_tons":434.9,"value_usd":2302790},{"month":"2023-07","commodity_id":"C02","volume_tons":40517.1,"value_usd":24714301},{"month":"2023-07","commodity_id":"C03","volume_tons":59.699999999999996,"value_usd":414766},{"month":"2023-07","commodity_id":"C04","volume_tons":35.4,"value_usd":297720},{"month":"2023-07","commodity_id":"C05","volume_tons":27308.6,"value_usd":49841564},{"month":"2023-07","commodity_id":"C06","volume_tons":3459.4,"value_usd":10622617},{"month":"2023-07","commodity_id":"C07","volume_tons":2241.6,"value_usd":4617291},{"month":"2023-08","commodity_id":"C01","volume_tons":413.6,"value_usd":2170595},{"month":"2023-08","commodity_id":"C02","volume_tons":46653.1,"value_usd":30292597},{"month":"2023-08","commodity_id":"C03","volume_tons":62.0,"value_usd":415811},{"month":"2023-08","commodity_id":"C04","volume_tons":41.6,"value_usd":333457},{"month":"2023-08","commodity_id":"C05","volume_tons":28262.3,"value_usd":53706716},{"month":"2023-08","commodity_id":"C06","volume_tons":3256.7999999999997,"value_usd":10429274},{"month":"2023-08","commodity_id":"C07","volume_tons":2272.6,"value_usd":4552111},{"month":"2023-09","commodity_id":"C01","volume_tons":425.3,"value_usd":2225505},{"month":"2023-09","commodity_id":"C02","volume_tons":938.2,"value_usd":589684},{"month":"2023-09","commodity_id":"C03","volume_tons":61.6,"value_usd":413037},{"month":"2023-09","commodity_id":"C04","volume_tons":38.0,"value_usd":306545},{"month":"2023-09","commodity_id":"C05","volume_tons":24975.600000000002,"value_usd":49452954},{"month":"2023-09","commodity_id":"C06","volume_tons":3693.4,"value_usd":11492626},{"month":"2023-09","commodity_id":"C07","volume_tons":2486.2000000000003,"value_usd":5003495},{"month":"2023-10","commodity_id":"C01","volume_tons":18523.6,"value_usd":101136133},{"month":"2023-10","commodity_id":"C02","volume_tons":1147.4,"value_usd":724343},{"month":"2023-10","commodity_id":"C03","volume_tons":63.4,"value_usd":435274},{"month":"2023-10","commodity_id":"C04","volume_tons":33.2,"value_usd":264329},{"month":"2023-10","commodity_id":"C05","volume_tons":27986.4,"value_usd":54160310},{"month":"2023-10","commodity_id":"C06","volume_tons":3739.2,"value_usd":11379522},{"month":"2023-10","commodity_id":"C07","volume_tons":2948.0,"value_usd":6005188},{"month":"2023-11","commodity_id":"C01","volume_tons":19311.1,"value_usd":101099760},{"month":"2023-11","commodity_id":"C02","volume_tons":44376.2,"value_usd":27888952},{"month":"2023-11","commodity_id":"C03","volume_tons":58.0,"value_usd":392391},{"month":"2023-11","commodity_id":"C04","volume_tons":32.1,"value_usd":271527},{"month":"2023-11","commodity_id":"C05","volume_tons":660.8,"value_usd":1272596},{"month":"2023-11","commodity_id":"C06","volume_tons":3362.9,"value_usd":10415937},{"month":"2023-11","commodity_id":"C07","volume_tons":2412.4,"value_usd":5046874},{"month":"2023-12","commodity_id":"C01","volume_tons":20003.9,"value_usd":106632965},{"month":"2023-12","commodity_id":"C02","volume_tons":42444.5,"value_usd":27744780},{"month":"2023-12","commodity_id":"C03","volume_tons":59.699999999999996,"value_usd":401150},{"month":"2023-12","commodity_id":"C04","volume_tons":38.3,"value_usd":318730},{"month":"2023-12","commodity_id":"C05","volume_tons":714.3000000000001,"value_usd":1372417},{"month":"2023-12","commodity_id":"C06","volume_tons":3493.5,"value_usd":10797162},{"month":"2023-12","commodity_id":"C07","volume_tons":85.2,"value_usd":171515},{"month":"2024-01","commodity_id":"C01","volume_tons":20565.3,"value_usd":111523652},{"month":"2024-01","commodity_id":"C02","volume_tons":1086.8,"value_usd":697196},{"month":"2024-01","commodity_id":"C03","volume_tons":56.1,"value_usd":374085},{"month":"2024-01","commodity_id":"C04","volume_tons":35.1,"value_usd":286706},{"month":"2024-01","commodity_id":"C05","volume_tons":684.4,"value_usd":1311650},{"month":"2024-01","commodity_id":"C06","volume_tons":3758.0,"value_usd":11537488},{"month":"2024-01","commodity_id":"C07","volume_tons":83.7,"value_usd":175700},{"month":"2024-02","commodity_id":"C01","volume_tons":19777.100000000002,"value_usd":108316085},{"month":"2024-02","commodity_id":"C02","volume_tons":1002.8,"value_usd":647740},{"month":"2024-02","commodity_id":"C03","volume_tons":3724.7000000000003,"value_usd":24999713},{"month":"2024-02","commodity_id":"C04","volume_tons":1957.2,"value_usd":16237874},{"month":"2024-02","commodity_id":"C05","volume_tons":704.8,"value_usd":1347976},{"month":"2024-02","commodity_id":"C06","volume_tons":3614.8,"value_usd":10700259},{"month":"2024-02","commodity_id":"C07","volume_tons":88.3,"value_usd":189597},{"month":"2024-03","commodity_id":"C01","volume_tons":488.59999999999997,"value_usd":2672919},{"month":"2024-03","commodity_id":"C02","volume_tons":38025.4,"value_usd":24311636},{"month":"2024-03","commodity_id":"C03","volume_tons":3759.7,"value_usd":24785331},{"month":"2024-03","commodity_id":"C04","volume_tons":1838.0,"value_usd":14684757},{"month":"2024-03","commodity_id":"C05","volume_tons":676.5,"value_usd":1312060},{"month":"2024-03","commodity_id":"C06","volume_tons":3156.2000000000003,"value_usd":9539558},{"month":"2024-03","commodity_id":"C07","volume_tons":83.1,"value_usd":177923},{"month":"2024-04","commodity_id":"C01","volume_tons":413.7,"value_usd":2241179},{"month":"2024-04","commodity_id":"C02","volume_tons":39553.6,"value_usd":24718268},{"month":"2024-04","commodity_id":"C03","volume_tons":3451.6,"value_usd":23585302},{"month":"2024-04","commodity_id":"C04","volume_tons":2204.5,"value_usd":17734038},{"month":"2024-04","commodity_id":"C05","volume_tons":620.7,"value_usd":1211389},{"month":"2024-04","commodity_id":"C06","volume_tons":3347.9,"value_usd":10006748},{"month":"2024-04","commodity_id":"C07","volume_tons":2611.2,"value_usd":5505948},{"month":"2024-05","commodity_id":"C01","volume_tons":433.9,"value_usd":2349432},{"month":"2024-05","commodity_id":"C02","volume_tons":1061.8999999999999,"value_usd":694706},{"month":"2024-05","commodity_id":"C03","volume_tons":3132.6,"value_usd":21439000},{"month":"2024-05","commodity_id":"C04","volume_tons":2076.1,"value_usd":16907284},{"month":"2024-05","commodity_id":"C05","volume_tons":30700.3,"value_usd":59616113},{"month":"2024-05","commodity_id":"C06","volume_tons":3274.6,"value_usd":10240510},{"month":"2024-05","commodity_id":"C07","volume_tons":2397.8,"value_usd":4940026},{"month":"2024-06","commodity_id":"C01","volume_tons":434.1,"value_usd":2340105},{"month":"2024-06","commodity_id":"C02","volume_tons":1028.5,"value_usd":673740},{"month":"2024-06","commodity_id":"C03","volume_tons":60.8,"value_usd":395796},{"month":"2024-06","commodity_id":"C04","volume_tons":37.0,"value_usd":314247},{"month":"2024-06","commodity_id":"C05","volume_tons":26767.2,"value_usd":51626343},{"month":"2024-06","commodity_id":"C06","volume_tons":3542.0,"value_usd":11127003},{"month":"2024-06","commodity_id":"C07","volume_tons":2380.0,"value_usd":4956330},{"month":"2024-07","commodity_id":"C01","volume_tons":444.3,"value_usd":2413278},{"month":"2024-07","commodity_id":"C02","volume_tons":40938.5,"value_usd":26576294},{"month":"2024-07","commodity_id":"C03","volume_tons":53.0,"value_usd":359127},{"month":"2024-07","commodity_id":"C04","volume_tons":34.1,"value_usd":278490},{"month":"2024-07","commodity_id":"C05","volume_tons":26637.9,"value_usd":50435227},{"month":"2024-07","commodity_id":"C06","volume_tons":3686.8999999999996,"value_usd":11517451},{"month":"2024-07","commodity_id":"C07","volume_tons":2844.2,"value_usd":6102921},{"month":"2024-08","commodity_id":"C01","volume_tons":467.2,"value_usd":2548872},{"month":"2024-08","commodity_id":"C02","volume_tons":39278.6,"value_usd":25711698},{"month":"2024-08","commodity_id":"C03","volume_tons":60.3,"value_usd":403154},{"month":"2024-08","commodity_id":"C04","volume_tons":38.199999999999996,"value_usd":323975},{"month":"2024-08","commodity_id":"C05","volume_tons":29574.500000000004,"value_usd":57147144},{"month":"2024-08","commodity_id":"C06","volume_tons":3843.5,"value_usd":11994891},{"month":"2024-08","commodity_id":"C07","volume_tons":2618.8,"value_usd":5428735},{"month":"2024-09","commodity_id":"C01","volume_tons":475.59999999999997,"value_usd":2491622},{"month":"2024-09","commodity_id":"C02","volume_tons":976.8000000000001,"value_usd":656511},{"month":"2024-09","commodity_id":"C03","volume_tons":57.9,"value_usd":394329},{"month":"2024-09","commodity_id":"C04","volume_tons":31.6,"value_usd":267269},{"month":"2024-09","commodity_id":"C05","volume_tons":32371.699999999997,"value_usd":60543745},{"month":"2024-09","commodity_id":"C06","volume_tons":3787.6,"value_usd":11947983},{"month":"2024-09","commodity_id":"C07","volume_tons":2585.9,"value_usd":5281248},{"month":"2024-10","commodity_id":"C01","volume_tons":23756.2,"value_usd":129103429},{"month":"2024-10","commodity_id":"C02","volume_tons":967.2,"value_usd":623685},{"month":"2024-10","commodity_id":"C03","volume_tons":60.2,"value_usd":398596},{"month":"2024-10","commodity_id":"C04","volume_tons":38.2,"value_usd":307586},{"month":"2024-10","commodity_id":"C05","volume_tons":26522.2,"value_usd":51822533},{"month":"2024-10","commodity_id":"C06","volume_tons":3915.6,"value_usd":11968372},{"month":"2024-10","commodity_id":"C07","volume_tons":2148.6,"value_usd":4490735},{"month":"2024-11","commodity_id":"C01","volume_tons":25865.0,"value_usd":136944501},{"month":"2024-11","commodity_id":"C02","volume_tons":41802.9,"value_usd":27635601},{"month":"2024-11","commodity_id":"C03","volume_tons":58.7,"value_usd":391600},{"month":"2024-11","commodity_id":"C04","volume_tons":33.6,"value_usd":275316},{"month":"2024-11","commodity_id":"C05","volume_tons":773.9,"value_usd":1486860},{"month":"2024-11","commodity_id":"C06","volume_tons":3246.0,"value_usd":10223374},{"month":"2024-11","commodity_id":"C07","volume_tons":2585.6,"value_usd":5265771},{"month":"2024-12","commodity_id":"C01","volume_tons":19889.8,"value_usd":105876707},{"month":"2024-12","commodity_id":"C02","volume_tons":41733.3,"value_usd":26259753},{"month":"2024-12","commodity_id":"C03","volume_tons":59.7,"value_usd":405027},{"month":"2024-12","commodity_id":"C04","volume_tons":30.3,"value_usd":245944},{"month":"2024-12","commodity_id":"C05","volume_tons":758.4,"value_usd":1487109},{"month":"2024-12","commodity_id":"C06","volume_tons":3755.5,"value_usd":11684365},{"month":"2024-12","commodity_id":"C07","volume_tons":89.3,"value_usd":184269},{"month":"2025-01","commodity_id":"C01","volume_tons":21361.9,"value_usd":115089072},{"month":"2025-01","commodity_id":"C02","volume_tons":1031.0,"value_usd":633849},{"month":"2025-01","commodity_id":"C03","volume_tons":59.3,"value_usd":410777},{"month":"2025-01","commodity_id":"C04","volume_tons":32.5,"value_usd":267611},{"month":"2025-01","commodity_id":"C05","volume_tons":713.1,"value_usd":1367691},{"month":"2025-01","commodity_id":"C06","volume_tons":3075.5,"value_usd":9449274},{"month":"2025-01","commodity_id":"C07","volume_tons":89.2,"value_usd":186658},{"month":"2025-02","commodity_id":"C01","volume_tons":23999.5,"value_usd":128704186},{"month":"2025-02","commodity_id":"C02","volume_tons":1116.9,"value_usd":703389},{"month":"2025-02","commodity_id":"C03","volume_tons":3848.6,"value_usd":25833788},{"month":"2025-02","commodity_id":"C04","volume_tons":2040.3,"value_usd":17004670},{"month":"2025-02","commodity_id":"C05","volume_tons":783.3,"value_usd":1517629},{"month":"2025-02","commodity_id":"C06","volume_tons":3469.6,"value_usd":10386954},{"month":"2025-02","commodity_id":"C07","volume_tons":82.2,"value_usd":169877},{"month":"2025-03","commodity_id":"C01","volume_tons":451.5,"value_usd":2416454},{"month":"2025-03","commodity_id":"C02","volume_tons":39456.3,"value_usd":25589784},{"month":"2025-03","commodity_id":"C03","volume_tons":3777.6,"value_usd":25296011},{"month":"2025-03","commodity_id":"C04","volume_tons":2036.8,"value_usd":16371306},{"month":"2025-03","commodity_id":"C05","volume_tons":721.7,"value_usd":1377412},{"month":"2025-03","commodity_id":"C06","volume_tons":4060.2,"value_usd":12277624},{"month":"2025-03","commodity_id":"C07","volume_tons":93.5,"value_usd":188156}],"monthly_prod_by_commodity":[{"month":"2023-04","commodity_id":"C01","production_tons":552.0},{"month":"2023-04","commodity_id":"C02","production_tons":51734.0},{"month":"2023-04","commodity_id":"C03","production_tons":4509.6},{"month":"2023-04","commodity_id":"C04","production_tons":2550.7},{"month":"2023-04","commodity_id":"C05","production_tons":893.4000000000001},{"month":"2023-04","commodity_id":"C06","production_tons":4078.0},{"month":"2023-04","commodity_id":"C07","production_tons":3219.2999999999997},{"month":"2023-05","commodity_id":"C01","production_tons":569.0},{"month":"2023-05","commodity_id":"C02","production_tons":1396.7},{"month":"2023-05","commodity_id":"C03","production_tons":4246.4},{"month":"2023-05","commodity_id":"C04","production_tons":2492.8},{"month":"2023-05","commodity_id":"C05","production_tons":32928.2},{"month":"2023-05","commodity_id":"C06","production_tons":4379.7},{"month":"2023-05","commodity_id":"C07","production_tons":3136.0},{"month":"2023-06","commodity_id":"C01","production_tons":540.1},{"month":"2023-06","commodity_id":"C02","production_tons":1326.1},{"month":"2023-06","commodity_id":"C03","production_tons":74.4},{"month":"2023-06","commodity_id":"C04","production_tons":46.599999999999994},{"month":"2023-06","commodity_id":"C05","production_tons":36621.2},{"month":"2023-06","commodity_id":"C06","production_tons":4389.0},{"month":"2023-06","commodity_id":"C07","production_tons":3197.2},{"month":"2023-07","commodity_id":"C01","production_tons":547.9},{"month":"2023-07","commodity_id":"C02","production_tons":53549.899999999994},{"month":"2023-07","commodity_id":"C03","production_tons":73.2},{"month":"2023-07","commodity_id":"C04","production_tons":46.8},{"month":"2023-07","commodity_id":"C05","production_tons":33231.0},{"month":"2023-07","commodity_id":"C06","production_tons":4165.3},{"month":"2023-07","commodity_id":"C07","production_tons":3040.2},{"month":"2023-08","commodity_id":"C01","production_tons":528.3},{"month":"2023-08","commodity_id":"C02","production_tons":56490.9},{"month":"2023-08","commodity_id":"C03","production_tons":73.3},{"month":"2023-08","commodity_id":"C04","production_tons":47.5},{"month":"2023-08","commodity_id":"C05","production_tons":35906.5},{"month":"2023-08","commodity_id":"C06","production_tons":4613.5},{"month":"2023-08","commodity_id":"C07","production_tons":3156.3},{"month":"2023-09","commodity_id":"C01","production_tons":560.9},{"month":"2023-09","commodity_id":"C02","production_tons":1336.5},{"month":"2023-09","commodity_id":"C03","production_tons":80.5},{"month":"2023-09","commodity_id":"C04","production_tons":45.3},{"month":"2023-09","commodity_id":"C05","production_tons":34704.6},{"month":"2023-09","commodity_id":"C06","production_tons":4303.9},{"month":"2023-09","commodity_id":"C07","production_tons":3204.0},{"month":"2023-10","commodity_id":"C01","production_tons":27031.5},{"month":"2023-10","commodity_id":"C02","production_tons":1408.7},{"month":"2023-10","commodity_id":"C03","production_tons":74.9},{"month":"2023-10","commodity_id":"C04","production_tons":43.9},{"month":"2023-10","commodity_id":"C05","production_tons":33973.8},{"month":"2023-10","commodity_id":"C06","production_tons":4585.2},{"month":"2023-10","commodity_id":"C07","production_tons":3313.6000000000004},{"month":"2023-11","commodity_id":"C01","production_tons":26068.2},{"month":"2023-11","commodity_id":"C02","production_tons":53323.0},{"month":"2023-11","commodity_id":"C03","production_tons":74.7},{"month":"2023-11","commodity_id":"C04","production_tons":47.7},{"month":"2023-11","commodity_id":"C05","production_tons":854.7},{"month":"2023-11","commodity_id":"C06","production_tons":4623.9},{"month":"2023-11","commodity_id":"C07","production_tons":3037.2},{"month":"2023-12","commodity_id":"C01","production_tons":27984.3},{"month":"2023-12","commodity_id":"C02","production_tons":53349.3},{"month":"2023-12","commodity_id":"C03","production_tons":76.5},{"month":"2023-12","commodity_id":"C04","production_tons":44.7},{"month":"2023-12","commodity_id":"C05","production_tons":936.4},{"month":"2023-12","commodity_id":"C06","production_tons":4547.5},{"month":"2023-12","commodity_id":"C07","production_tons":99.80000000000001},{"month":"2024-01","commodity_id":"C01","production_tons":27033.399999999998},{"month":"2024-01","commodity_id":"C02","production_tons":1262.8},{"month":"2024-01","commodity_id":"C03","production_tons":73.7},{"month":"2024-01","commodity_id":"C04","production_tons":43.6},{"month":"2024-01","commodity_id":"C05","production_tons":911.8},{"month":"2024-01","commodity_id":"C06","production_tons":4607.5},{"month":"2024-01","commodity_id":"C07","production_tons":111.3},{"month":"2024-02","commodity_id":"C01","production_tons":27891.2},{"month":"2024-02","commodity_id":"C02","production_tons":1325.8},{"month":"2024-02","commodity_id":"C03","production_tons":4244.1},{"month":"2024-02","commodity_id":"C04","production_tons":2774.5},{"month":"2024-02","commodity_id":"C05","production_tons":947.9000000000001},{"month":"2024-02","commodity_id":"C06","production_tons":4534.8},{"month":"2024-02","commodity_id":"C07","production_tons":106.3},{"month":"2024-03","commodity_id":"C01","production_tons":577.2},{"month":"2024-03","commodity_id":"C02","production_tons":53226.4},{"month":"2024-03","commodity_id":"C03","production_tons":4787.5},{"month":"2024-03","commodity_id":"C04","production_tons":2587.4},{"month":"2024-03","commodity_id":"C05","production_tons":960.1},{"month":"2024-03","commodity_id":"C06","production_tons":4399.1},{"month":"2024-03","commodity_id":"C07","production_tons":106.3},{"month":"2024-04","commodity_id":"C01","production_tons":546.5},{"month":"2024-04","commodity_id":"C02","production_tons":53851.4},{"month":"2024-04","commodity_id":"C03","production_tons":4604.8},{"month":"2024-04","commodity_id":"C04","production_tons":2721.6},{"month":"2024-04","commodity_id":"C05","production_tons":930.3},{"month":"2024-04","commodity_id":"C06","production_tons":4529.6},{"month":"2024-04","commodity_id":"C07","production_tons":3254.4},{"month":"2024-05","commodity_id":"C01","production_tons":548.9},{"month":"2024-05","commodity_id":"C02","production_tons":1407.4},{"month":"2024-05","commodity_id":"C03","production_tons":4379.6},{"month":"2024-05","commodity_id":"C04","production_tons":2666.7},{"month":"2024-05","commodity_id":"C05","production_tons":34569.0},{"month":"2024-05","commodity_id":"C06","production_tons":4554.7},{"month":"2024-05","commodity_id":"C07","production_tons":3303.6},{"month":"2024-06","commodity_id":"C01","production_tons":561.9},{"month":"2024-06","commodity_id":"C02","production_tons":1359.7},{"month":"2024-06","commodity_id":"C03","production_tons":79.6},{"month":"2024-06","commodity_id":"C04","production_tons":46.8},{"month":"2024-06","commodity_id":"C05","production_tons":33694.5},{"month":"2024-06","commodity_id":"C06","production_tons":4644.1},{"month":"2024-06","commodity_id":"C07","production_tons":3148.4},{"month":"2024-07","commodity_id":"C01","production_tons":548.9},{"month":"2024-07","commodity_id":"C02","production_tons":55133.3},{"month":"2024-07","commodity_id":"C03","production_tons":74.3},{"month":"2024-07","commodity_id":"C04","production_tons":48.0},{"month":"2024-07","commodity_id":"C05","production_tons":34956.0},{"month":"2024-07","commodity_id":"C06","production_tons":4655.8},{"month":"2024-07","commodity_id":"C07","production_tons":3225.9},{"month":"2024-08","commodity_id":"C01","production_tons":589.4},{"month":"2024-08","commodity_id":"C02","production_tons":54116.6},{"month":"2024-08","commodity_id":"C03","production_tons":77.2},{"month":"2024-08","commodity_id":"C04","production_tons":48.1},{"month":"2024-08","commodity_id":"C05","production_tons":36776.5},{"month":"2024-08","commodity_id":"C06","production_tons":4761.5},{"month":"2024-08","commodity_id":"C07","production_tons":3205.5},{"month":"2024-09","commodity_id":"C01","production_tons":576.8},{"month":"2024-09","commodity_id":"C02","production_tons":1362.6},{"month":"2024-09","commodity_id":"C03","production_tons":80.0},{"month":"2024-09","commodity_id":"C04","production_tons":46.9},{"month":"2024-09","commodity_id":"C05","production_tons":36955.7},{"month":"2024-09","commodity_id":"C06","production_tons":4598.9},{"month":"2024-09","commodity_id":"C07","production_tons":3430.3},{"month":"2024-10","commodity_id":"C01","production_tons":27565.2},{"month":"2024-10","commodity_id":"C02","production_tons":1364.5},{"month":"2024-10","commodity_id":"C03","production_tons":75.6},{"month":"2024-10","commodity_id":"C04","production_tons":47.7},{"month":"2024-10","commodity_id":"C05","production_tons":34288.2},{"month":"2024-10","commodity_id":"C06","production_tons":4605.9},{"month":"2024-10","commodity_id":"C07","production_tons":3152.8999999999996},{"month":"2024-11","commodity_id":"C01","production_tons":28881.8},{"month":"2024-11","commodity_id":"C02","production_tons":56350.899999999994},{"month":"2024-11","commodity_id":"C03","production_tons":80.0},{"month":"2024-11","commodity_id":"C04","production_tons":47.0},{"month":"2024-11","commodity_id":"C05","production_tons":977.4},{"month":"2024-11","commodity_id":"C06","production_tons":4520.8},{"month":"2024-11","commodity_id":"C07","production_tons":3397.2},{"month":"2024-12","commodity_id":"C01","production_tons":27784.8},{"month":"2024-12","commodity_id":"C02","production_tons":55387.2},{"month":"2024-12","commodity_id":"C03","production_tons":75.0},{"month":"2024-12","commodity_id":"C04","production_tons":43.3},{"month":"2024-12","commodity_id":"C05","production_tons":900.7},{"month":"2024-12","commodity_id":"C06","production_tons":4614.9},{"month":"2024-12","commodity_id":"C07","production_tons":119.1},{"month":"2025-01","commodity_id":"C01","production_tons":27959.5},{"month":"2025-01","commodity_id":"C02","production_tons":1362.4},{"month":"2025-01","commodity_id":"C03","production_tons":76.8},{"month":"2025-01","commodity_id":"C04","production_tons":45.0},{"month":"2025-01","commodity_id":"C05","production_tons":921.4},{"month":"2025-01","commodity_id":"C06","production_tons":4686.700000000001},{"month":"2025-01","commodity_id":"C07","production_tons":117.0},{"month":"2025-02","commodity_id":"C01","production_tons":29492.3},{"month":"2025-02","commodity_id":"C02","production_tons":1335.6000000000001},{"month":"2025-02","commodity_id":"C03","production_tons":4858.1},{"month":"2025-02","commodity_id":"C04","production_tons":2690.8},{"month":"2025-02","commodity_id":"C05","production_tons":942.4},{"month":"2025-02","commodity_id":"C06","production_tons":4263.8},{"month":"2025-02","commodity_id":"C07","production_tons":106.39999999999999},{"month":"2025-03","commodity_id":"C01","production_tons":571.8},{"month":"2025-03","commodity_id":"C02","production_tons":55599.6},{"month":"2025-03","commodity_id":"C03","production_tons":4824.6},{"month":"2025-03","commodity_id":"C04","production_tons":2581.3999999999996},{"month":"2025-03","commodity_id":"C05","production_tons":909.1},{"month":"2025-03","commodity_id":"C06","production_tons":4452.4},{"month":"2025-03","commodity_id":"C07","production_tons":111.69999999999999}],"by_market":[{"market_id":"EU","volume_tons":230982.3,"value_usd":856149152,"market_name":"European Union","standard_level":"strict"},{"market_id":"China","volume_tons":320557.9,"value_usd":524243850,"market_name":"Trung Quốc","standard_level":"standard"},{"market_id":"US","volume_tons":136872.2,"value_usd":443540231,"market_name":"United States","standard_level":"strict"},{"market_id":"ASEAN","volume_tons":245026.9,"value_usd":298397388,"market_name":"Đông Nam Á","standard_level":"standard"},{"market_id":"Middle East","volume_tons":117749.5,"value_usd":234221773,"market_name":"Trung Đông","standard_level":"standard"},{"market_id":"Japan","volume_tons":73199.3,"value_usd":218470033,"market_name":"Nhật Bản","standard_level":"strict"},{"market_id":"Korea","volume_tons":68345.2,"value_usd":165186365,"market_name":"Hàn Quốc","standard_level":"standard"},{"market_id":"Others","volume_tons":51164.0,"value_usd":100444204,"market_name":"Khác","standard_level":"standard"}],"comm_market":[{"commodity_id":"C01","market_id":"ASEAN","volume_tons":16854.1,"value_usd":74169047},{"commodity_id":"C01","market_id":"China","volume_tons":17473.0,"value_usd":86933502},{"commodity_id":"C01","market_id":"EU","volume_tons":93433.1,"value_usd":534078572},{"commodity_id":"C01","market_id":"Japan","volume_tons":20649.0,"value_usd":116205088},{"commodity_id":"C01","market_id":"Korea","volume_tons":13872.8,"value_usd":71716573},{"commodity_id":"C01","market_id":"Middle East","volume_tons":15068.8,"value_usd":76452397},{"commodity_id":"C01","market_id":"Others","volume_tons":10281.6,"value_usd":48092348},{"commodity_id":"C01","market_id":"US","volume_tons":31528.8,"value_usd":169356944},{"commodity_id":"C02","market_id":"ASEAN","volume_tons":176026.0,"value_usd":105099993},{"commodity_id":"C02","market_id":"China","volume_tons":138465.9,"value_usd":87359822},{"commodity_id":"C02","market_id":"EU","volume_tons":42053.4,"value_usd":31967568},{"commodity_id":"C02","market_id":"Japan","volume_tons":16513.3,"value_usd":11612702},{"commodity_id":"C02","market_id":"Korea","volume_tons":21252.5,"value_usd":14673029},{"commodity_id":"C02","market_id":"Middle East","volume_tons":63166.7,"value_usd":42011696},{"commodity_id":"C02","market_id":"Others","volume_tons":25830.3,"value_usd":15730973},{"commodity_id":"C02","market_id":"US","volume_tons":25081.8,"value_usd":17439245},{"commodity_id":"C03","market_id":"ASEAN","volume_tons":3327.0,"value_usd":19137078},{"commodity_id":"C03","market_id":"China","volume_tons":2939.4,"value_usd":18555044},{"commodity_id":"C03","market_id":"EU","volume_tons":8278.1,"value_usd":59526217},{"commodity_id":"C03","market_id":"Japan","volume_tons":1440.2,"value_usd":10181860},{"commodity_id":"C03","market_id":"Korea","volume_tons":1503.9,"value_usd":9813221},{"commodity_id":"C03","market_id":"Middle East","volume_tons":4670.5,"value_usd":30226793},{"commodity_id":"C03","market_id":"Others","volume_tons":897.1,"value_usd":5367713},{"commodity_id":"C03","market_id":"US","volume_tons":6166.700000000001,"value_usd":43416438},{"commodity_id":"C04","market_id":"ASEAN","volume_tons":1366.9,"value_usd":9439159},{"commodity_id":"C04","market_id":"China","volume_tons":2898.1,"value_usd":22324508},{"commodity_id":"C04","market_id":"EU","volume_tons":3723.9,"value_usd":32963888},{"commodity_id":"C04","market_id":"Japan","volume_tons":505.09999999999997,"value_usd":4334984},{"commodity_id":"C04","market_id":"Korea","volume_tons":503.0,"value_usd":4088866},{"commodity_id":"C04","market_id":"Middle East","volume_tons":1708.2,"value_usd":13240867},{"commodity_id":"C04","market_id":"Others","volume_tons":667.3,"value_usd":4748223},{"commodity_id":"C04","market_id":"US","volume_tons":5255.7,"value_usd":45217130},{"commodity_id":"C05","market_id":"ASEAN","volume_tons":34152.4,"value_usd":57604696},{"commodity_id":"C05","market_id":"China","volume_tons":125121.2,"value_usd":228620395},{"commodity_id":"C05","market_id":"EU","volume_tons":61138.5,"value_usd":128088860},{"commodity_id":"C05","market_id":"Japan","volume_tons":27165.9,"value_usd":56267880},{"commodity_id":"C05","market_id":"Korea","volume_tons":24065.3,"value_usd":46483334},{"commodity_id":"C05","market_id":"Middle East","volume_tons":22757.3,"value_usd":43264586},{"commodity_id":"C05","market_id":"Others","volume_tons":10151.4,"value_usd":17983752},{"commodity_id":"C05","market_id":"US","volume_tons":41868.5,"value_usd":85198162},{"commodity_id":"C06","market_id":"ASEAN","volume_tons":10147.5,"value_usd":27178380},{"commodity_id":"C06","market_id":"China","volume_tons":15298.4,"value_usd":44321386},{"commodity_id":"C06","market_id":"EU","volume_tons":16512.5,"value_usd":56041566},{"commodity_id":"C06","market_id":"Japan","volume_tons":4073.1,"value_usd":13516995},{"commodity_id":"C06","market_id":"Korea","volume_tons":3246.5,"value_usd":10081380},{"commodity_id":"C06","market_id":"Middle East","volume_tons":8417.9,"value_usd":25018877},{"commodity_id":"C06","market_id":"Others","volume_tons":2530.7,"value_usd":7015628},{"commodity_id":"C06","market_id":"US","volume_tons":23772.4,"value_usd":75929734},{"commodity_id":"C07","market_id":"ASEAN","volume_tons":3153.0,"value_usd":5769035},{"commodity_id":"C07","market_id":"China","volume_tons":18361.9,"value_usd":36129193},{"commodity_id":"C07","market_id":"EU","volume_tons":5842.8,"value_usd":13482481},{"commodity_id":"C07","market_id":"Japan","volume_tons":2852.7000000000003,"value_usd":6350524},{"commodity_id":"C07","market_id":"Korea","volume_tons":3901.2,"value_usd":8329962},{"commodity_id":"C07","market_id":"Middle East","volume_tons":1960.1,"value_usd":4006557},{"commodity_id":"C07","market_id":"Others","volume_tons":805.6,"value_usd":1505567},{"commodity_id":"C07","market_id":"US","volume_tons":3198.3,"value_usd":6982578}],"income_trend":[{"quarter":"2023-Q2","commodity_id":"C01","avg_net_per_ha_usd":-23.0,"avg_net_per_farmer_vnd":-3471618.0,"avg_farmgate_pct":63.4,"total_farmers":35000},{"quarter":"2023-Q2","commodity_id":"C02","avg_net_per_ha_usd":4.0,"avg_net_per_farmer_vnd":236342.0,"avg_farmgate_pct":64.2,"total_farmers":99700},{"quarter":"2023-Q2","commodity_id":"C03","avg_net_per_ha_usd":202.0,"avg_net_per_farmer_vnd":20162548.0,"avg_farmgate_pct":65.6,"total_farmers":7600},{"quarter":"2023-Q2","commodity_id":"C04","avg_net_per_ha_usd":98.0,"avg_net_per_farmer_vnd":8119576.0,"avg_farmgate_pct":64.6,"total_farmers":13000},{"quarter":"2023-Q2","commodity_id":"C05","avg_net_per_ha_usd":404.0,"avg_net_per_farmer_vnd":26379922.0,"avg_farmgate_pct":60.8,"total_farmers":13200},{"quarter":"2023-Q2","commodity_id":"C06","avg_net_per_ha_usd":6036.0,"avg_net_per_farmer_vnd":193736900.0,"avg_farmgate_pct":64.3,"total_farmers":6000},{"quarter":"2023-Q2","commodity_id":"C07","avg_net_per_ha_usd":10.0,"avg_net_per_farmer_vnd":1491212.0,"avg_farmgate_pct":66.4,"total_farmers":12700},{"quarter":"2023-Q3","commodity_id":"C01","avg_net_per_ha_usd":-24.0,"avg_net_per_farmer_vnd":-3484780.0,"avg_farmgate_pct":65.7,"total_farmers":35000},{"quarter":"2023-Q3","commodity_id":"C02","avg_net_per_ha_usd":23.0,"avg_net_per_farmer_vnd":1347902.0,"avg_farmgate_pct":64.0,"total_farmers":99700},{"quarter":"2023-Q3","commodity_id":"C03","avg_net_per_ha_usd":-28.0,"avg_net_per_farmer_vnd":-2775156.0,"avg_farmgate_pct":65.6,"total_farmers":7600},{"quarter":"2023-Q3","commodity_id":"C04","avg_net_per_ha_usd":-14.0,"avg_net_per_farmer_vnd":-1159650.0,"avg_farmgate_pct":66.1,"total_farmers":13000},{"quarter":"2023-Q3","commodity_id":"C05","avg_net_per_ha_usd":710.0,"avg_net_per_farmer_vnd":46330712.0,"avg_farmgate_pct":69.0,"total_farmers":13200},{"quarter":"2023-Q3","commodity_id":"C06","avg_net_per_ha_usd":6118.0,"avg_net_per_farmer_vnd":196318880.0,"avg_farmgate_pct":64.0,"total_farmers":6000},{"quarter":"2023-Q3","commodity_id":"C07","avg_net_per_ha_usd":9.0,"avg_net_per_farmer_vnd":1267322.0,"avg_farmgate_pct":63.5,"total_farmers":12700},{"quarter":"2023-Q4","commodity_id":"C01","avg_net_per_ha_usd":208.0,"avg_net_per_farmer_vnd":30338274.0,"avg_farmgate_pct":64.8,"total_farmers":35000},{"quarter":"2023-Q4","commodity_id":"C02","avg_net_per_ha_usd":22.0,"avg_net_per_farmer_vnd":1293395.0,"avg_farmgate_pct":65.9,"total_farmers":99700},{"quarter":"2023-Q4","commodity_id":"C03","avg_net_per_ha_usd":-30.0,"avg_net_per_farmer_vnd":-3014472.0,"avg_farmgate_pct":65.5,"total_farmers":7600},{"quarter":"2023-Q4","commodity_id":"C04","avg_net_per_ha_usd":-14.0,"avg_net_per_farmer_vnd":-1237143.0,"avg_farmgate_pct":62.2,"total_farmers":13000},{"quarter":"2023-Q4","commodity_id":"C05","avg_net_per_ha_usd":214.0,"avg_net_per_farmer_vnd":13976575.0,"avg_farmgate_pct":68.8,"total_farmers":13200},{"quarter":"2023-Q4","commodity_id":"C06","avg_net_per_ha_usd":6775.0,"avg_net_per_farmer_vnd":217035878.0,"avg_farmgate_pct":67.3,"total_farmers":6000},{"quarter":"2023-Q4","commodity_id":"C07","avg_net_per_ha_usd":1.0,"avg_net_per_farmer_vnd":78134.0,"avg_farmgate_pct":67.1,"total_farmers":12700},{"quarter":"2024-Q1","commodity_id":"C01","avg_net_per_ha_usd":134.0,"avg_net_per_farmer_vnd":19599338.0,"avg_farmgate_pct":65.6,"total_farmers":35000},{"quarter":"2024-Q1","commodity_id":"C02","avg_net_per_ha_usd":4.0,"avg_net_per_farmer_vnd":207520.0,"avg_farmgate_pct":65.7,"total_farmers":99700},{"quarter":"2024-Q1","commodity_id":"C03","avg_net_per_ha_usd":210.0,"avg_net_per_farmer_vnd":20834499.0,"avg_farmgate_pct":64.6,"total_farmers":7600},{"quarter":"2024-Q1","commodity_id":"C04","avg_net_per_ha_usd":105.0,"avg_net_per_farmer_vnd":8689390.0,"avg_farmgate_pct":65.1,"total_farmers":13000},{"quarter":"2024-Q1","commodity_id":"C05","avg_net_per_ha_usd":-27.0,"avg_net_per_farmer_vnd":-1758586.0,"avg_farmgate_pct":61.8,"total_farmers":13200},{"quarter":"2024-Q1","commodity_id":"C06","avg_net_per_ha_usd":6886.0,"avg_net_per_farmer_vnd":220672002.0,"avg_farmgate_pct":69.6,"total_farmers":6000},{"quarter":"2024-Q1","commodity_id":"C07","avg_net_per_ha_usd":-22.0,"avg_net_per_farmer_vnd":-3287338.0,"avg_farmgate_pct":65.4,"total_farmers":12700},{"quarter":"2024-Q2","commodity_id":"C01","avg_net_per_ha_usd":-26.0,"avg_net_per_farmer_vnd":-3811967.0,"avg_farmgate_pct":64.2,"total_farmers":35000},{"quarter":"2024-Q2","commodity_id":"C02","avg_net_per_ha_usd":4.0,"avg_net_per_farmer_vnd":237097.0,"avg_farmgate_pct":65.8,"total_farmers":99700},{"quarter":"2024-Q2","commodity_id":"C03","avg_net_per_ha_usd":210.0,"avg_net_per_farmer_vnd":20906664.0,"avg_farmgate_pct":67.0,"total_farmers":7600},{"quarter":"2024-Q2","commodity_id":"C04","avg_net_per_ha_usd":106.0,"avg_net_per_farmer_vnd":8832113.0,"avg_farmgate_pct":66.8,"total_farmers":13000},{"quarter":"2024-Q2","commodity_id":"C05","avg_net_per_ha_usd":456.0,"avg_net_per_farmer_vnd":29744796.0,"avg_farmgate_pct":69.0,"total_farmers":13200},{"quarter":"2024-Q2","commodity_id":"C06","avg_net_per_ha_usd":6436.0,"avg_net_per_farmer_vnd":206512120.0,"avg_farmgate_pct":64.0,"total_farmers":6000},{"quarter":"2024-Q2","commodity_id":"C07","avg_net_per_ha_usd":11.0,"avg_net_per_farmer_vnd":1648809.0,"avg_farmgate_pct":68.0,"total_farmers":12700},{"quarter":"2024-Q3","commodity_id":"C01","avg_net_per_ha_usd":-25.0,"avg_net_per_farmer_vnd":-3596920.0,"avg_farmgate_pct":65.9,"total_farmers":35000},{"quarter":"2024-Q3","commodity_id":"C02","avg_net_per_ha_usd":24.0,"avg_net_per_farmer_vnd":1417116.0,"avg_farmgate_pct":68.7,"total_farmers":99700},{"quarter":"2024-Q3","commodity_id":"C03","avg_net_per_ha_usd":-32.0,"avg_net_per_farmer_vnd":-3198570.0,"avg_farmgate_pct":61.4,"total_farmers":7600},{"quarter":"2024-Q3","commodity_id":"C04","avg_net_per_ha_usd":-14.0,"avg_net_per_farmer_vnd":-1221301.0,"avg_farmgate_pct":65.8,"total_farmers":13000},{"quarter":"2024-Q3","commodity_id":"C05","avg_net_per_ha_usd":704.0,"avg_net_per_farmer_vnd":46010036.0,"avg_farmgate_pct":65.7,"total_farmers":13200},{"quarter":"2024-Q3","commodity_id":"C06","avg_net_per_ha_usd":6706.0,"avg_net_per_farmer_vnd":214635626.0,"avg_farmgate_pct":65.8,"total_farmers":6000},{"quarter":"2024-Q3","commodity_id":"C07","avg_net_per_ha_usd":10.0,"avg_net_per_farmer_vnd":1502219.0,"avg_farmgate_pct":67.4,"total_farmers":12700},{"quarter":"2024-Q4","commodity_id":"C01","avg_net_per_ha_usd":214.0,"avg_net_per_farmer_vnd":31122334.0,"avg_farmgate_pct":64.7,"total_farmers":35000},{"quarter":"2024-Q4","commodity_id":"C02","avg_net_per_ha_usd":23.0,"avg_net_per_farmer_vnd":1379464.0,"avg_farmgate_pct":67.5,"total_farmers":99700},{"quarter":"2024-Q4","commodity_id":"C03","avg_net_per_ha_usd":-30.0,"avg_net_per_farmer_vnd":-2959591.0,"avg_farmgate_pct":64.3,"total_farmers":7600},{"quarter":"2024-Q4","commodity_id":"C04","avg_net_per_ha_usd":-15.0,"avg_net_per_farmer_vnd":-1243466.0,"avg_farmgate_pct":64.2,"total_farmers":13000},{"quarter":"2024-Q4","commodity_id":"C05","avg_net_per_ha_usd":207.0,"avg_net_per_farmer_vnd":13496274.0,"avg_farmgate_pct":66.9,"total_farmers":13200},{"quarter":"2024-Q4","commodity_id":"C06","avg_net_per_ha_usd":6904.0,"avg_net_per_farmer_vnd":221326606.0,"avg_farmgate_pct":68.7,"total_farmers":6000},{"quarter":"2024-Q4","commodity_id":"C07","avg_net_per_ha_usd":-2.0,"avg_net_per_farmer_vnd":-240069.0,"avg_farmgate_pct":66.9,"total_farmers":12700},{"quarter":"2025-Q1","commodity_id":"C01","avg_net_per_ha_usd":134.0,"avg_net_per_farmer_vnd":19468432.0,"avg_farmgate_pct":64.0,"total_farmers":35000},{"quarter":"2025-Q1","commodity_id":"C02","avg_net_per_ha_usd":3.0,"avg_net_per_farmer_vnd":180880.0,"avg_farmgate_pct":63.0,"total_farmers":99700},{"quarter":"2025-Q1","commodity_id":"C03","avg_net_per_ha_usd":226.0,"avg_net_per_farmer_vnd":22560730.0,"avg_farmgate_pct":66.4,"total_farmers":7600},{"quarter":"2025-Q1","commodity_id":"C04","avg_net_per_ha_usd":104.0,"avg_net_per_farmer_vnd":8667568.0,"avg_farmgate_pct":67.6,"total_farmers":13000},{"quarter":"2025-Q1","commodity_id":"C05","avg_net_per_ha_usd":-30.0,"avg_net_per_farmer_vnd":-1969238.0,"avg_farmgate_pct":67.0,"total_farmers":13200},{"quarter":"2025-Q1","commodity_id":"C06","avg_net_per_ha_usd":6483.0,"avg_net_per_farmer_vnd":208005116.0,"avg_farmgate_pct":66.1,"total_farmers":6000},{"quarter":"2025-Q1","commodity_id":"C07","avg_net_per_ha_usd":-23.0,"avg_net_per_farmer_vnd":-3412374.0,"avg_farmgate_pct":69.4,"total_farmers":12700}],"cert_by_commodity":[{"commodity_id":"C01","organic":7.4,"globalgap":21.3,"vietgap":36.9,"conventional":34.4},{"commodity_id":"C02","organic":6.5,"globalgap":27.8,"vietgap":41.3,"conventional":24.4},{"commodity_id":"C03","organic":5.0,"globalgap":23.5,"vietgap":42.5,"conventional":29.1},{"commodity_id":"C04","organic":2.4,"globalgap":15.4,"vietgap":45.4,"conventional":36.7},{"commodity_id":"C05","organic":8.2,"globalgap":32.2,"vietgap":40.2,"conventional":19.5},{"commodity_id":"C06","organic":16.5,"globalgap":36.0,"vietgap":32.5,"conventional":15.1},{"commodity_id":"C07","organic":1.6,"globalgap":11.8,"vietgap":40.1,"conventional":46.5}],"summary_by_commodity":[{"commodity_id":"C01","name_en":"Robusta Coffee","name_vi":"Cà phê Robusta","category":"Industrial","total_hectares":41000,"total_farmers":7000,"total_regions":5,"production_tons_24m":285511,"export_volume_tons":219161,"export_value_usd":1177004471,"avg_price_usd_per_ton":5370,"current_yield":3.48,"target_yield":3.5,"vn_avg_yield":3.0,"world_avg_yield":1.0,"yield_vs_target_pct":99.5,"yoy_growth_pct":69.6,"certified_pct":65.6,"eudr_ready_pct":52.9,"avg_farmer_income_vnd_q":10770386,"post_harvest_loss_pct":11.3},{"commodity_id":"C05","name_en":"Dragon Fruit","name_vi":"Thanh long","category":"Fruit","total_hectares":6900,"total_farmers":2640,"total_regions":2,"production_tons_24m":429690,"export_volume_tons":346420,"export_value_usd":663511665,"avg_price_usd_per_ton":1915,"current_yield":31.14,"target_yield":35.0,"vn_avg_yield":28.0,"world_avg_yield":18.0,"yield_vs_target_pct":89.0,"yoy_growth_pct":3.2,"certified_pct":80.5,"eudr_ready_pct":74.8,"avg_farmer_income_vnd_q":21526311,"post_harvest_loss_pct":7.4},{"commodity_id":"C02","name_en":"Rice (Jasmine)","name_vi":"Lúa gạo Jasmine","category":"Staple","total_hectares":47400,"total_farmers":19940,"total_regions":4,"production_tons_24m":668361,"export_volume_tons":508389,"export_value_usd":325895028,"avg_price_usd_per_ton":641,"current_yield":7.05,"target_yield":7.0,"vn_avg_yield":6.2,"world_avg_yield":4.7,"yield_vs_target_pct":100.7,"yoy_growth_pct":22.7,"certified_pct":75.6,"eudr_ready_pct":67.4,"avg_farmer_income_vnd_q":787464,"post_harvest_loss_pct":8.8},{"commodity_id":"C06","name_en":"Pangasius (Basa)","name_vi":"Cá tra","category":"Aquaculture","total_hectares":1540,"total_farmers":1200,"total_regions":2,"production_tons_24m":108116,"export_volume_tons":83999,"export_value_usd":259103946,"avg_price_usd_per_ton":3084,"current_yield":35.1,"target_yield":40.0,"vn_avg_yield":30.0,"world_avg_yield":25.0,"yield_vs_target_pct":87.8,"yoy_growth_pct":38.7,"certified_pct":84.9,"eudr_ready_pct":82.7,"avg_farmer_income_vnd_q":209780390,"post_harvest_loss_pct":5.9},{"commodity_id":"C03","name_en":"Black Pepper","name_vi":"Hồ tiêu","category":"Spice","total_hectares":6100,"total_farmers":1520,"total_regions":2,"production_tons_24m":37674,"export_volume_tons":29222,"export_value_usd":196224364,"avg_price_usd_per_ton":6714,"current_yield":3.09,"target_yield":3.5,"vn_avg_yield":2.8,"world_avg_yield":1.2,"yield_vs_target_pct":88.2,"yoy_growth_pct":100.7,"certified_pct":70.9,"eudr_ready_pct":57.7,"avg_farmer_income_vnd_q":9064581,"post_harvest_loss_pct":10.4},{"commodity_id":"C04","name_en":"Cashew","name_vi":"Điều","category":"Nut","total_hectares":8700,"total_farmers":2600,"total_regions":2,"production_tons_24m":21804,"export_volume_tons":16628,"export_value_usd":136357625,"avg_price_usd_per_ton":8200,"current_yield":1.25,"target_yield":1.8,"vn_avg_yield":1.2,"world_avg_yield":0.8,"yield_vs_target_pct":69.6,"yoy_growth_pct":107.3,"certified_pct":63.3,"eudr_ready_pct":43.4,"avg_farmer_income_vnd_q":3680885,"post_harvest_loss_pct":13.4},{"commodity_id":"C07","name_en":"Natural Rubber","name_vi":"Cao su tự nhiên","category":"Industrial","total_hectares":15000,"total_farmers":2540,"total_regions":3,"production_tons_24m":52299,"export_volume_tons":40075,"export_value_usd":82555897,"avg_price_usd_per_ton":2060,"current_yield":1.74,"target_yield":2.0,"vn_avg_yield":1.7,"world_avg_yield":1.1,"yield_vs_target_pct":87.2,"yoy_growth_pct":4.6,"certified_pct":53.5,"eudr_ready_pct":34.1,"avg_farmer_income_vnd_q":-119010,"post_harvest_loss_pct":14.8}],"summary_by_region":[{"region_id":"R14","region_name":"Bình Thuận (Dragon)","commodity_id":"C05","commodity_name":"Thanh long","hectares":4400,"farmers":1680,"cert_level":"high","production_tons_24m":270351,"yield_per_ha":30.72,"certified_pct":81.0,"eudr_ready_pct":73.9,"avg_net_per_farmer_vnd_q":21279073,"post_harvest_loss_pct":7.6},{"region_id":"R07","region_name":"Kiên Giang (Rice)","commodity_id":"C02","commodity_name":"Lúa gạo Jasmine","hectares":14400,"farmers":6200,"cert_level":"high","production_tons_24m":205288,"yield_per_ha":7.13,"certified_pct":80.1,"eudr_ready_pct":74.3,"avg_net_per_farmer_vnd_q":768970,"post_harvest_loss_pct":7.3},{"region_id":"R06","region_name":"An Giang (Rice)","commodity_id":"C02","commodity_name":"Lúa gạo Jasmine","hectares":13000,"farmers":5600,"cert_level":"high","production_tons_24m":184604,"yield_per_ha":7.1,"certified_pct":80.1,"eudr_ready_pct":76.5,"avg_net_per_farmer_vnd_q":725472,"post_harvest_loss_pct":7.6},{"region_id":"R15","region_name":"Long An (Dragon)","commodity_id":"C05","commodity_name":"Thanh long","hectares":2500,"farmers":960,"cert_level":"high","production_tons_24m":159339,"yield_per_ha":31.87,"certified_pct":80.0,"eudr_ready_pct":75.8,"avg_net_per_farmer_vnd_q":21773550,"post_harvest_loss_pct":7.3},{"region_id":"R08","region_name":"Đồng Tháp (Rice)","commodity_id":"C02","commodity_name":"Lúa gạo Jasmine","hectares":11000,"farmers":4500,"cert_level":"high","production_tons_24m":157387,"yield_per_ha":7.15,"certified_pct":80.4,"eudr_ready_pct":76.7,"avg_net_per_farmer_vnd_q":941574,"post_harvest_loss_pct":7.5},{"region_id":"R01","region_name":"Đắk Lắk (Coffee)","commodity_id":"C01","commodity_name":"Cà phê Robusta","hectares":17000,"farmers":2480,"cert_level":"high","production_tons_24m":124552,"yield_per_ha":3.66,"certified_pct":79.5,"eudr_ready_pct":74.0,"avg_net_per_farmer_vnd_q":14024271,"post_harvest_loss_pct":7.7},{"region_id":"R09","region_name":"Long An (Rice)","commodity_id":"C02","commodity_name":"Lúa gạo Jasmine","hectares":9000,"farmers":3640,"cert_level":"medium","production_tons_24m":121079,"yield_per_ha":6.73,"certified_pct":61.8,"eudr_ready_pct":42.2,"avg_net_per_farmer_vnd_q":713840,"post_harvest_loss_pct":12.8},{"region_id":"R17","region_name":"An Giang (Pangasius)","commodity_id":"C06","commodity_name":"Cá tra","hectares":840,"farmers":640,"cert_level":"veryhigh","production_tons_24m":61402,"yield_per_ha":36.55,"certified_pct":90.2,"eudr_ready_pct":91.4,"avg_net_per_farmer_vnd_q":223344821,"post_harvest_loss_pct":4.6},{"region_id":"R02","region_name":"Lâm Đồng (Coffee)","commodity_id":"C01","commodity_name":"Cà phê Robusta","hectares":8400,"farmers":1640,"cert_level":"veryhigh","production_tons_24m":61066,"yield_per_ha":3.63,"certified_pct":89.5,"eudr_ready_pct":91.4,"avg_net_per_farmer_vnd_q":10292603,"post_harvest_loss_pct":4.6},{"region_id":"R16","region_name":"Đồng Tháp (Pangasius)","commodity_id":"C06","commodity_name":"Cá tra","hectares":700,"farmers":560,"cert_level":"high","production_tons_24m":46714,"yield_per_ha":33.37,"certified_pct":79.6,"eudr_ready_pct":74.0,"avg_net_per_farmer_vnd_q":196215960,"post_harvest_loss_pct":7.2},{"region_id":"R03","region_name":"Đắk Nông (Coffee)","commodity_id":"C01","commodity_name":"Cà phê Robusta","hectares":7000,"farmers":1360,"cert_level":"medium","production_tons_24m":46182,"yield_per_ha":3.3,"certified_pct":62.0,"eudr_ready_pct":42.6,"avg_net_per_farmer_vnd_q":8820109,"post_harvest_loss_pct":13.1},{"region_id":"R04","region_name":"Gia Lai (Coffee)","commodity_id":"C01","commodity_name":"Cà phê Robusta","hectares":5600,"farmers":1080,"cert_level":"medium","production_tons_24m":35913,"yield_per_ha":3.21,"certified_pct":61.7,"eudr_ready_pct":42.8,"avg_net_per_farmer_vnd_q":9790990,"post_harvest_loss_pct":13.0},{"region_id":"R18","region_name":"Bình Phước (Rubber)","commodity_id":"C07","commodity_name":"Cao su tự nhiên","hectares":7600,"farmers":1300,"cert_level":"medium","production_tons_24m":27175,"yield_per_ha":1.79,"certified_pct":62.8,"eudr_ready_pct":42.3,"avg_net_per_farmer_vnd_q":-2241,"post_harvest_loss_pct":12.9},{"region_id":"R10","region_name":"Bình Phước (Pepper)","commodity_id":"C03","commodity_name":"Hồ tiêu","hectares":3700,"farmers":900,"cert_level":"medium","production_tons_24m":22081,"yield_per_ha":2.98,"certified_pct":62.3,"eudr_ready_pct":42.7,"avg_net_per_farmer_vnd_q":8695770,"post_harvest_loss_pct":13.4},{"region_id":"R05","region_name":"Kon Tum (Coffee)","commodity_id":"C01","commodity_name":"Cà phê Robusta","hectares":3000,"farmers":440,"cert_level":"low","production_tons_24m":17796,"yield_per_ha":2.97,"certified_pct":35.3,"eudr_ready_pct":13.6,"avg_net_per_farmer_vnd_q":10923957,"post_harvest_loss_pct":18.2},{"region_id":"R11","region_name":"Đắk Lắk (Pepper)","commodity_id":"C03","commodity_name":"Hồ tiêu","hectares":2400,"farmers":620,"cert_level":"high","production_tons_24m":15592,"yield_per_ha":3.25,"certified_pct":79.6,"eudr_ready_pct":72.8,"avg_net_per_farmer_vnd_q":9433392,"post_harvest_loss_pct":7.3},{"region_id":"R19","region_name":"Tây Ninh (Rubber)","commodity_id":"C07","commodity_name":"Cao su tự nhiên","hectares":4400,"farmers":760,"cert_level":"medium","production_tons_24m":15275,"yield_per_ha":1.74,"certified_pct":62.5,"eudr_ready_pct":42.7,"avg_net_per_farmer_vnd_q":-3006,"post_harvest_loss_pct":13.2},{"region_id":"R12","region_name":"Bình Phước (Cashew)","commodity_id":"C04","commodity_name":"Điều","hectares":5600,"farmers":1640,"cert_level":"medium","production_tons_24m":13889,"yield_per_ha":1.24,"certified_pct":62.9,"eudr_ready_pct":42.5,"avg_net_per_farmer_vnd_q":3654691,"post_harvest_loss_pct":13.8},{"region_id":"R20","region_name":"Bà Rịa-VT (Rubber)","commodity_id":"C07","commodity_name":"Cao su tự nhiên","hectares":3000,"farmers":480,"cert_level":"low","production_tons_24m":9849,"yield_per_ha":1.64,"certified_pct":35.3,"eudr_ready_pct":17.2,"avg_net_per_farmer_vnd_q":-351784,"post_harvest_loss_pct":18.3},{"region_id":"R13","region_name":"Đồng Nai (Cashew)","commodity_id":"C04","commodity_name":"Điều","hectares":3100,"farmers":960,"cert_level":"medium","production_tons_24m":7915,"yield_per_ha":1.28,"certified_pct":63.6,"eudr_ready_pct":44.3,"avg_net_per_farmer_vnd_q":3707080,"post_harvest_loss_pct":12.9}],"meta":{"source":"embedded","company":"Tập đoàn Nông Sản Đông Dương","period":"2023-04 → 2025-03 (24 months)","framework":"EUDR · VietGAP · GlobalGAP · Organic · RA/UTZ/4C"}};
+
+let filters = { commodity: '', market: '', cert: '' };
+let charts = {};
+
+const PALETTE = {
+  accent: '#4A6B2E', earth: '#8B6A4A', sage: '#5E8566', alert: '#B84545', warn: '#D1A845',
+  coral: '#E06C35', teal: '#3A7A85', plum: '#6E4A6A', navy: '#1F3A5C', gold: '#C89849', mint: '#7BA688', wheat: '#D4A574',
+  ink: '#1A1F2E', mute: '#7A8194', line: '#E5DFD2',
+  commodityColors: {
+    'C01': '#6B4423',  // Coffee brown
+    'C02': '#D4A574',  // Rice wheat
+    'C03': '#3A2318',  // Pepper black
+    'C04': '#C8A063',  // Cashew beige
+    'C05': '#D94F67',  // Dragon fruit pink
+    'C06': '#4A8A95',  // Pangasius water blue
+    'C07': '#2F5233',  // Rubber dark green
+  },
+  marketColors: {
+    'EU': '#1F3A5C', 'US': '#B84545', 'China': '#D4A12A',
+    'Japan': '#C8A063', 'Korea': '#3A7A85', 'ASEAN': '#4A6B2E',
+    'Middle East': '#8B6A4A', 'Others': '#7A8194'
+  }
+};
+
+Chart.defaults.font.family = "'Manrope', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = PALETTE.ink;
+
+function fmtInt(n) { return Math.round(n).toLocaleString('vi-VN'); }
+function fmtUsd(n) {
+  if (n >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return '$' + (n/1e6).toFixed(0) + 'M';
+  if (n >= 1e3) return '$' + (n/1e3).toFixed(0) + 'K';
+  return '$' + n.toFixed(0);
+}
+
+function init() {
+  populateFilters();
+  attachEvents();
+  render();
+}
+
+function populateFilters() {
+  const commodities = DATA.dim_commodities.map(c => ({ id: c.commodity_id, name: c.name_vi }));
+  const markets = DATA.dim_markets.map(m => ({ id: m.market_id, name: m.market_name }));
+
+  const fillObj = (id, items) => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">Tất cả</option>' + items.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
+  };
+  fillObj('f-commodity', commodities);
+  fillObj('f-market', markets);
+}
+
+function attachEvents() {
+  ['f-commodity','f-market','f-cert'].forEach(id => {
+    document.getElementById(id).addEventListener('change', e => {
+      filters[id.replace('f-','')] = e.target.value;
+      render();
+    });
+  });
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    filters = { commodity: '', market: '', cert: '' };
+    ['f-commodity','f-market','f-cert'].forEach(id => document.getElementById(id).value = '');
+    render();
+  });
+}
+
+function render() {
+  renderHero();
+  renderExportTrend();
+  renderMarketChart();
+  renderMatrixChart();
+  renderCertBreakdown();
+  renderCalendar();
+  renderYieldChart();
+  renderIncomeChart();
+  renderCommodityTable();
+  renderRegionTable();
+}
+
+// ========== HERO ==========
+function renderHero() {
+  const k = DATA.agri_kpis;
+
+  document.getElementById('export-value').innerHTML = fmtUsd(k.export_value_annualized_usd) + '<span class="unit"> /năm</span>';
+  document.getElementById('export-yoy').textContent = (k.yoy_export_growth_pct >= 0 ? '▲ +' : '▼ ') + k.yoy_export_growth_pct + '% YoY';
+  document.getElementById('export-vol').textContent = fmtInt(k.export_volume_tons_24m/2/1000) + 'k tons/yr';
+  document.getElementById('export-price').textContent = '$' + fmtInt(k.avg_price_usd_per_ton) + '/ton';
+
+  document.getElementById('kpi-hectares').innerHTML = fmtInt(k.total_hectares) + '<span class="unit"> ha</span>';
+  document.getElementById('kpi-hectares-sub').textContent = k.total_regions + ' vùng · 7 commodities';
+
+  document.getElementById('kpi-farmers').innerHTML = fmtInt(k.total_farmers);
+  document.getElementById('kpi-farmers-sub').textContent = '~' + (k.total_hectares / k.total_farmers).toFixed(1) + ' ha/hộ · smallholder model';
+
+  const certClass = k.certified_pct >= 60 ? 'good' : k.certified_pct >= 40 ? 'warn' : 'alert';
+  document.getElementById('kpi-cert').innerHTML = k.certified_pct + '<span class="unit"> %</span>';
+  document.getElementById('kpi-cert-sub').innerHTML = 'VN avg 25-30% <span class="badge ' + certClass + '">Above avg</span>';
+
+  const eudrClass = k.eudr_ready_pct >= 70 ? 'good' : k.eudr_ready_pct >= 50 ? 'warn' : 'alert';
+  document.getElementById('kpi-eudr').innerHTML = k.eudr_ready_pct + '<span class="unit"> %</span>';
+  document.getElementById('kpi-eudr-sub').innerHTML = 'EU ' + k.eu_share_pct + '% exports <span class="badge ' + eudrClass + '">' + (k.eudr_ready_pct >= 70 ? 'On track' : 'Need push') + '</span>';
+
+  document.getElementById('kpi-farmer-income').innerHTML = Math.round(k.avg_farmer_income_q_vnd/1e6) + '<span class="unit"> tr VND</span>';
+  document.getElementById('kpi-farmer-income-sub').textContent = 'Farmgate ' + k.avg_farmgate_pct + '% export price · ~' + Math.round(k.avg_farmer_income_q_vnd*4/1e6) + 'M/năm';
+
+  const lossClass = k.post_harvest_loss_pct <= 8 ? 'good' : k.post_harvest_loss_pct <= 12 ? 'warn' : 'alert';
+  document.getElementById('kpi-loss').innerHTML = k.post_harvest_loss_pct + '<span class="unit"> %</span>';
+  document.getElementById('kpi-loss-sub').innerHTML = 'World avg 15-20% <span class="badge ' + lossClass + '">Below avg</span>';
+}
+
+// ========== Export Trend ==========
+function renderExportTrend() {
+  const data = DATA.monthly_exports;
+  const months = data.map(d => d.month);
+
+  if (charts.trend) charts.trend.destroy();
+  charts.trend = new Chart(document.getElementById('exportTrendChart'), {
+    data: {
+      labels: months,
+      datasets: [
+        { type: 'bar', label: 'Export Value (M USD)', data: data.map(d => Math.round(d.value_usd/1e6)), backgroundColor: PALETTE.accent+'C0', borderWidth: 0, yAxisID: 'y', order: 2 },
+        { type: 'line', label: 'Avg Price USD/ton', data: data.map(d => d.avg_price), borderColor: PALETTE.gold, backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.3, pointRadius: 3, yAxisID: 'y1', order: 1 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 10 } } },
+        tooltip: { backgroundColor: PALETTE.ink, padding: 10, cornerRadius: 0 }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: PALETTE.mute, font: { size: 9, family: "'JetBrains Mono', monospace" } } },
+        y: { position: 'left', beginAtZero: true, grid: { color: PALETTE.line }, ticks: { color: PALETTE.accent, font: { size: 10, family: "'JetBrains Mono', monospace" }, callback: v => '$' + v + 'M' } },
+        y1: { position: 'right', beginAtZero: true, grid: { display: false }, ticks: { color: PALETTE.gold, font: { size: 10, family: "'JetBrains Mono', monospace" }, callback: v => '$' + v } }
+      }
+    }
+  });
+}
+
+// ========== Market Chart ==========
+function renderMarketChart() {
+  const data = DATA.by_market;
+
+  if (charts.market) charts.market.destroy();
+  charts.market = new Chart(document.getElementById('marketChart'), {
+    type: 'doughnut',
+    data: {
+      labels: data.map(d => d.market_id),
+      datasets: [{
+        data: data.map(d => Math.round(d.value_usd/1e6)),
+        backgroundColor: data.map(d => PALETTE.marketColors[d.market_id] || PALETTE.mute),
+        borderColor: '#FFFFFF', borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '60%',
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 8, font: { size: 10 } } },
+        tooltip: { backgroundColor: PALETTE.ink, padding: 10, cornerRadius: 0,
+          callbacks: { label: c => {
+            const total = c.dataset.data.reduce((a,b)=>a+b,0);
+            const item = data[c.dataIndex];
+            return [c.label + ': $' + fmtInt(c.parsed) + 'M (' + ((c.parsed/total)*100).toFixed(1) + '%)',
+                    'Standard: ' + item.standard_level];
+          } } }
+      }
+    }
+  });
+}
+
+// ========== SIGNATURE: Portfolio Matrix (bubble) ==========
+function renderMatrixChart() {
+  const data = DATA.summary_by_commodity;
+
+  const datasets = data.map(c => ({
+    label: c.name_vi,
+    data: [{
+      x: c.yield_vs_target_pct,
+      y: c.yoy_growth_pct,
+      r: Math.sqrt(c.export_value_usd / 1e6) * 1.2,  // bubble size
+      export: c.export_value_usd,
+      cert: c.certified_pct,
+      eudr: c.eudr_ready_pct,
+    }],
+    backgroundColor: PALETTE.commodityColors[c.commodity_id] + 'AA',
+    borderColor: PALETTE.commodityColors[c.commodity_id],
+    borderWidth: 2,
+  }));
+
+  if (charts.matrix) charts.matrix.destroy();
+  charts.matrix = new Chart(document.getElementById('matrixChart'), {
+    type: 'bubble',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 10 } } },
+        tooltip: { backgroundColor: PALETTE.ink, padding: 12, cornerRadius: 0,
+          callbacks: {
+            title: (ctx) => ctx[0].dataset.label,
+            label: (ctx) => {
+              const d = ctx.raw;
+              return [
+                'Yield vs Target: ' + d.x + '%',
+                'YoY Growth: ' + (d.y >= 0 ? '+' : '') + d.y + '%',
+                'Export: ' + fmtUsd(d.export),
+                'Certified: ' + d.cert + '% · EUDR: ' + d.eudr + '%',
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Yield vs Target (%) →', font: { size: 11, family: "'JetBrains Mono', monospace", weight: 600 }, color: PALETTE.ink },
+          min: 50, max: 120,
+          grid: { color: PALETTE.line }, ticks: { color: PALETTE.mute, font: { size: 10, family: "'JetBrains Mono', monospace" }, callback: v => v + '%' },
+        },
+        y: {
+          title: { display: true, text: 'YoY Growth (%) ↑', font: { size: 11, family: "'JetBrains Mono', monospace", weight: 600 }, color: PALETTE.ink },
+          grid: { color: PALETTE.line }, ticks: { color: PALETTE.mute, font: { size: 10, family: "'JetBrains Mono', monospace" }, callback: v => v + '%' },
+        }
+      }
+    }
+  });
+}
+
+// ========== Cert Breakdown ==========
+function renderCertBreakdown() {
+  const certData = DATA.cert_by_commodity;
+  const commMap = {};
+  DATA.dim_commodities.forEach(c => { commMap[c.commodity_id] = c; });
+
+  document.getElementById('certBreakdown').innerHTML = certData.map(c => {
+    const comm = commMap[c.commodity_id];
+    const certified = 100 - c.conventional;
+    return `
+      <div class="cert-row">
+        <div class="cert-name">${comm.name_vi}</div>
+        <div class="cert-stack">
+          <div class="cert-seg organic" style="width: ${c.organic}%"></div>
+          <div class="cert-seg globalgap" style="width: ${c.globalgap}%"></div>
+          <div class="cert-seg vietgap" style="width: ${c.vietgap}%"></div>
+          <div class="cert-seg conventional" style="width: ${c.conventional}%"></div>
+        </div>
+        <div class="cert-total-text">${certified.toFixed(0)}%</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ========== SIGNATURE: Harvest Calendar Heatmap ==========
+function renderCalendar() {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthNums = [1,2,3,4,5,6,7,8,9,10,11,12];
+
+  // Sum monthly exports per commodity × month (aggregate across years)
+  const calData = {};  // commodity_id -> [12 months]
+  DATA.monthly_by_commodity.forEach(r => {
+    const m = parseInt(r.month.split('-')[1]);
+    if (!calData[r.commodity_id]) calData[r.commodity_id] = Array(12).fill(0);
+    calData[r.commodity_id][m-1] += r.volume_tons;
+  });
+
+  // Find max per commodity for normalization
+  const maxPerCommodity = {};
+  Object.keys(calData).forEach(cid => {
+    maxPerCommodity[cid] = Math.max(...calData[cid]);
+  });
+
+  const commMap = {};
+  DATA.dim_commodities.forEach(c => { commMap[c.commodity_id] = c; });
+
+  let html = '<div class="cal-row-label"></div>';
+  months.forEach(m => html += `<div class="cal-header">${m}</div>`);
+
+  DATA.dim_commodities.forEach(comm => {
+    html += `<div class="cal-row-label">${comm.name_vi}</div>`;
+    const values = calData[comm.commodity_id] || Array(12).fill(0);
+    const max = maxPerCommodity[comm.commodity_id] || 1;
+    const color = PALETTE.commodityColors[comm.commodity_id];
+
+    values.forEach((v, idx) => {
+      if (v === 0) {
+        html += `<div class="cal-cell cal-cell-empty">—</div>`;
+      } else {
+        const intensity = v / max;  // 0-1
+        const opacity = 0.15 + intensity * 0.85;
+        html += `<div class="cal-cell" style="background: ${color}; opacity: ${opacity};" title="${Math.round(v)} tons">${Math.round(v/1000) || '•'}${v >= 1000 ? 'k' : ''}</div>`;
+      }
+    });
+  });
+
+  document.getElementById('calendarGrid').innerHTML = html;
+}
+
+// ========== Yield Chart ==========
+function renderYieldChart() {
+  const data = DATA.summary_by_commodity;
+
+  if (charts.yield) charts.yield.destroy();
+  charts.yield = new Chart(document.getElementById('yieldChart'), {
+    type: 'bar',
+    data: {
+      labels: data.map(d => d.name_vi),
+      datasets: [
+        { label: 'Current Yield', data: data.map(d => d.current_yield), backgroundColor: data.map(d => PALETTE.commodityColors[d.commodity_id] + 'DD'), borderWidth: 0 },
+        { label: 'Target', data: data.map(d => d.target_yield), backgroundColor: '#E5DFD2', borderWidth: 0 },
+        { label: 'World Avg', data: data.map(d => d.world_avg_yield), backgroundColor: PALETTE.mute + '80', borderWidth: 0 },
+      ]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 10 } } },
+        tooltip: { backgroundColor: PALETTE.ink, padding: 10, cornerRadius: 0,
+          callbacks: {
+            label: c => {
+              const item = data[c.dataIndex];
+              let unit = 'tons/ha';
+              if (item.commodity_id === 'C06') unit = 'tons/ha/year';
+              return c.dataset.label + ': ' + c.parsed.x.toFixed(1) + ' ' + unit;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { beginAtZero: true, grid: { color: PALETTE.line }, ticks: { color: PALETTE.mute, font: { size: 10, family: "'JetBrains Mono', monospace" } } },
+        y: { grid: { display: false }, ticks: { color: PALETTE.ink, font: { size: 11, weight: 500 } } }
+      }
+    }
+  });
+}
+
+// ========== Income Chart ==========
+function renderIncomeChart() {
+  const quarters = ['2023-Q2','2023-Q3','2023-Q4','2024-Q1','2024-Q2','2024-Q3','2024-Q4','2025-Q1'];
+
+  const datasets = DATA.dim_commodities.map(c => {
+    const values = quarters.map(q => {
+      const r = DATA.income_trend.find(x => x.quarter === q && x.commodity_id === c.commodity_id);
+      return r ? r.avg_net_per_ha_usd : 0;
+    });
+    return {
+      label: c.name_vi,
+      data: values,
+      borderColor: PALETTE.commodityColors[c.commodity_id],
+      backgroundColor: 'transparent',
+      borderWidth: 2, tension: 0.3, pointRadius: 2,
+    };
+  });
+
+  if (charts.income) charts.income.destroy();
+  charts.income = new Chart(document.getElementById('incomeChart'), {
+    type: 'line',
+    data: { labels: quarters, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 8, font: { size: 9 } } },
+        tooltip: { backgroundColor: PALETTE.ink, padding: 10, cornerRadius: 0,
+          callbacks: { label: c => c.dataset.label + ': $' + fmtInt(c.parsed.y) + '/ha/quarter' } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: PALETTE.mute, font: { size: 9, family: "'JetBrains Mono', monospace" } } },
+        y: { beginAtZero: true, grid: { color: PALETTE.line }, ticks: { color: PALETTE.mute, font: { size: 10, family: "'JetBrains Mono', monospace" }, callback: v => '$' + v } }
+      }
+    }
+  });
+}
+
+// ========== Commodity Table ==========
+function renderCommodityTable() {
+  const rows = [...DATA.summary_by_commodity].sort((a,b) => b.export_value_usd - a.export_value_usd);
+
+  document.getElementById('commodityBody').innerHTML = rows.map(r => {
+    const yieldClass = r.yield_vs_target_pct >= 95 ? 'good' : r.yield_vs_target_pct >= 85 ? 'warn' : 'alert';
+    const yoyClass = r.yoy_growth_pct >= 10 ? 'good' : r.yoy_growth_pct >= 0 ? 'warn' : 'alert';
+    const certClass = r.certified_pct >= 70 ? 'good' : r.certified_pct >= 50 ? 'warn' : 'alert';
+    const eudrClass = r.eudr_ready_pct >= 70 ? 'good' : r.eudr_ready_pct >= 50 ? 'warn' : 'alert';
+
+    return `
+      <tr>
+        <td><div class="item-name">${r.name_vi}</div><span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-mute);">${r.name_en}</span></td>
+        <td><span class="pill">${r.category}</span></td>
+        <td class="num">${fmtInt(r.total_hectares)}</td>
+        <td class="num">${fmtInt(r.total_farmers)}</td>
+        <td class="num" style="color: var(--accent); font-weight: 700;">$${fmtInt(r.export_value_usd/2/1e6)}M</td>
+        <td class="num">$${fmtInt(r.avg_price_usd_per_ton)}</td>
+        <td class="num">${r.current_yield}</td>
+        <td class="num"><span class="badge ${yieldClass}">${r.yield_vs_target_pct}%</span></td>
+        <td class="num"><span class="badge ${yoyClass}">${r.yoy_growth_pct >= 0 ? '+' : ''}${r.yoy_growth_pct}%</span></td>
+        <td class="num"><span class="badge ${certClass}">${r.certified_pct}%</span></td>
+        <td class="num"><span class="badge ${eudrClass}">${r.eudr_ready_pct}%</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ========== Region Table ==========
+function renderRegionTable() {
+  const rows = [...DATA.summary_by_region].sort((a,b) => b.production_tons_24m - a.production_tons_24m);
+
+  document.getElementById('regionBody').innerHTML = rows.map(r => {
+    const certClass = r.certified_pct >= 70 ? 'good' : r.certified_pct >= 50 ? 'warn' : 'alert';
+    const eudrClass = r.eudr_ready_pct >= 70 ? 'good' : r.eudr_ready_pct >= 50 ? 'warn' : 'alert';
+    const lossClass = r.post_harvest_loss_pct <= 8 ? 'good' : r.post_harvest_loss_pct <= 12 ? 'warn' : 'alert';
+    const incomeM = Math.round(r.avg_net_per_farmer_vnd_q / 1e6);
+
+    return `
+      <tr>
+        <td><div class="item-name">${r.region_name}</div></td>
+        <td style="font-size: 11px;">${r.commodity_name}</td>
+        <td class="num">${fmtInt(r.hectares)}</td>
+        <td class="num">${fmtInt(r.farmers)}</td>
+        <td style="text-align: center;"><span class="pill ${r.cert_level}">${r.cert_level}</span></td>
+        <td class="num">${r.yield_per_ha}</td>
+        <td class="num"><span class="badge ${certClass}">${r.certified_pct}%</span></td>
+        <td class="num"><span class="badge ${eudrClass}">${r.eudr_ready_pct}%</span></td>
+        <td class="num"><span class="badge ${lossClass}">${r.post_harvest_loss_pct}%</span></td>
+        <td class="num">${incomeM}M</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+init();
+</script>
+</body>
+</html>
